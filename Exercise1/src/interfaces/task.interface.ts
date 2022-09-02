@@ -5,7 +5,6 @@ interface iTask extends Document {
     taskTitle: string,
     description: string,
     dueDate: string,
-    // status: "actice" | "pending",
     assignBy: string,
     userId: { type: Types.ObjectId, ref: 'users' }
 }

@@ -8,10 +8,13 @@ import Task from "../models/task.model";
 import * as _ from "lodash";
 import nodemailer, { Transporter } from "nodemailer";
 
-const loginUserEmail = "kazim@gmail.com";
-const loginUserName = "Kazim Raza"
+export interface userAuthRequest extends Request {
+    user: any
+}
+export const assignNewTask = async (req: userAuthRequest, res: Response) => {
+    const loginUserEmail: string = req.user.email;
+    const loginUserName: string = req.user.name;
 
-export const assignNewTask = async (req: Request, res: Response) => {
     const assignTaskSchema: Schema<iAssignTask> = Joi.object({
         taskTitle: Joi.string().min(5).max(20).required(),
         description: Joi.string().min(5).max(100).required(),
@@ -45,19 +48,21 @@ export const assignNewTask = async (req: Request, res: Response) => {
                     pass: "cvmcmvufwbyrhhid"
                 }
             })
+            let today: Date = new Date();
+            const dateAndTime = today.toLocaleTimeString('it-IT');
 
-            const textToSent: string = loginUserName + " has assign you a task on NodeExercise website. Sign Up to view that Todo. You can register yourself at http://localhost:3001/user/register";
+            const textToSent: string = loginUserName + " has assign you a task on NodeExercise website. Sign Up to view that Task. You can register yourself at http://localhost:3001/user/register";
 
             var mailOptions = {
                 from: 'nodeexercise@gmail.com',
                 to: req.body.assignTo,
-                subject: 'Node JS Exercise 1',
+                subject: 'Node JS Exercise 1' + " - " + dateAndTime,
                 text: textToSent,
             };
 
             transporter.sendMail(mailOptions, async function (error, info) {
                 if (error) {
-                    res.status(400).send(error)
+                    res.status(401).send(error);
                 } else {
                     newAssignTask.assignBy = loginUserEmail;
                     newAssignTask.assignTo = req.body.assignTo;
@@ -66,7 +71,7 @@ export const assignNewTask = async (req: Request, res: Response) => {
                     const result: iAssignTask = await assignTaskObj.save();
                     return res.status(200).json({
                         "message": "Email send & New Task Assigned.",
-                        "Assign Task details": result
+                        "Assigned Task details": result
                     })
                 }
             });

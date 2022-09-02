@@ -1,5 +1,8 @@
 import { Schema, Model, model } from "mongoose";
 import iUser from "../interfaces/user.interface";
+import jwt from "jsonwebtoken";
+import * as dotenv from "dotenv";
+dotenv.config();
 
 const userSchema: Schema = new Schema<iUser>({
     email: {
@@ -25,6 +28,11 @@ const userSchema: Schema = new Schema<iUser>({
         trim: true
     }
 });
+
+userSchema.methods.generateAuthToken = function () {
+    const token = jwt.sign({ _id: this._id, email: this.email, name: this.fname + " " + this.lname }, process.env.jwtPrivateKey, { expiresIn: '2h' });
+    return token;
+}
 
 const User: Model<iUser> = model<iUser>("user", userSchema);
 export default User;

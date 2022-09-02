@@ -5,6 +5,7 @@ interface iUser extends Document {
     email: string,
     password: string,
     fname: string,
-    lname: string
+    lname: string,
+    generateAuthToken: Function
 }
 export default iUser;

@@ -29,5 +29,6 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = __importDefault(require("express"));
 const assignTaskRouter = express_1.default.Router();
 const assignTaskController = __importStar(require("../controllers/assignTask.controller"));
-assignTaskRouter.post("/", assignTaskController.assignNewTask);
+const auth_1 = __importDefault(require("../middlewares/auth"));
+assignTaskRouter.post("/", auth_1.default, assignTaskController.assignNewTask);
 exports.default = assignTaskRouter;

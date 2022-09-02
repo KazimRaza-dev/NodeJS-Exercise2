@@ -1,0 +1,237 @@
+{
+	"info": {
+		"_postman_id": "5a383239-9f22-4196-8afb-48de74f3ce4e",
+		"name": "TodoApp Exercise1",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "23011762"
+	},
+	"item": [
+		{
+			"name": "auth",
+			"item": [
+				{
+					"name": "Register",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\": \"nodeexercise1@gmail.com\",\n    \"password\": \"node123\",\n    \"fname\": \"Node\",\n    \"lname\": \"Exercise 1\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:3001/user/register",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3001",
+							"path": [
+								"user",
+								"register"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Login",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\": \"nodeexercise1@gmail.com\",\n    \"password\": \"node123\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:3001/user/login",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3001",
+							"path": [
+								"user",
+								"login"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Task",
+			"item": [
+				{
+					"name": "Add task",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "x-auth-token",
+								"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2MzExY2Y2NDllZmZhNDgyYTc0NzljYTciLCJlbWFpbCI6Im5vZGVleGVyY2lzZTFAZ21haWwuY29tIiwibmFtZSI6Ik5vZGUgRXhlcmNpc2UgMSIsImlhdCI6MTY2MjExMTYxMiwiZXhwIjoxNjYyMTE4ODEyfQ.Tm0XdaaQUNS-gMerQabAg9esIGQKKv8FAdMrU2-XGYQ",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"taskTitle\": \"Do Node exercise\",\n    \"description\":\"Do Node exercise 1 and 2\",\n    \"dueDate\": \"05/10/2022\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:3001/task/addtask",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3001",
+							"path": [
+								"task",
+								"addtask"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Edit task",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "x-auth-token",
+								"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2MzExY2Y2NDllZmZhNDgyYTc0NzljYTciLCJlbWFpbCI6Im5vZGVleGVyY2lzZTFAZ21haWwuY29tIiwibmFtZSI6Ik5vZGUgRXhlcmNpc2UgMSIsImlhdCI6MTY2MjExMTYxMiwiZXhwIjoxNjYyMTE4ODEyfQ.Tm0XdaaQUNS-gMerQabAg9esIGQKKv8FAdMrU2-XGYQ",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"taskTitle\": \"Node exercise in TS\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:3001/task/edittask/6311cfd99effa482a7479cac",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3001",
+							"path": [
+								"task",
+								"edittask",
+								"6311cfd99effa482a7479cac"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete task",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "x-auth-token",
+								"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2MzExY2Y2NDllZmZhNDgyYTc0NzljYTciLCJlbWFpbCI6Im5vZGVleGVyY2lzZTFAZ21haWwuY29tIiwibmFtZSI6Ik5vZGUgRXhlcmNpc2UgMSIsImlhdCI6MTY2MjExMTYxMiwiZXhwIjoxNjYyMTE4ODEyfQ.Tm0XdaaQUNS-gMerQabAg9esIGQKKv8FAdMrU2-XGYQ",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "http://localhost:3001/task/deletetask/6311cfd99effa482a7479cac",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3001",
+							"path": [
+								"task",
+								"deletetask",
+								"6311cfd99effa482a7479cac"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get all tasks",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "x-auth-token",
+								"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2MzExY2Y2NDllZmZhNDgyYTc0NzljYTciLCJlbWFpbCI6Im5vZGVleGVyY2lzZTFAZ21haWwuY29tIiwibmFtZSI6Ik5vZGUgRXhlcmNpc2UgMSIsImlhdCI6MTY2MjExMTYxMiwiZXhwIjoxNjYyMTE4ODEyfQ.Tm0XdaaQUNS-gMerQabAg9esIGQKKv8FAdMrU2-XGYQ",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "http://localhost:3001/task/getusertasks/6311cf649effa482a7479ca7",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3001",
+							"path": [
+								"task",
+								"getusertasks",
+								"6311cf649effa482a7479ca7"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Assign task",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "x-auth-token",
+								"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2MzExY2Y2NDllZmZhNDgyYTc0NzljYTciLCJlbWFpbCI6Im5vZGVleGVyY2lzZTFAZ21haWwuY29tIiwibmFtZSI6Ik5vZGUgRXhlcmNpc2UgMSIsImlhdCI6MTY2MjExMTYxMiwiZXhwIjoxNjYyMTE4ODEyfQ.Tm0XdaaQUNS-gMerQabAg9esIGQKKv8FAdMrU2-XGYQ",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"taskTitle\": \"Learn JWT\",\n    \"description\": \"Learn JWT as soon as possible\",\n    \"dueDate\": \"08/09/2022\",\n    \"assignTo\": \"kazim.raza@tintash.com\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:3001/assignTask",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3001",
+							"path": [
+								"assignTask"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	]
+}

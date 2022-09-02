@@ -42,9 +42,9 @@ const assignTask_model_1 = __importDefault(require("../models/assignTask.model")
 const task_model_1 = __importDefault(require("../models/task.model"));
 const _ = __importStar(require("lodash"));
 const nodemailer_1 = __importDefault(require("nodemailer"));
-const loginUserEmail = "kazim@gmail.com";
-const loginUserName = "Kazim Raza";
 const assignNewTask = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const loginUserEmail = req.user.email;
+    const loginUserName = req.user.name;
     const assignTaskSchema = joi_1.default.object({
         taskTitle: joi_1.default.string().min(5).max(20).required(),
         description: joi_1.default.string().min(5).max(100).required(),
@@ -77,17 +77,19 @@ const assignNewTask = (req, res) => __awaiter(void 0, void 0, void 0, function* 
                     pass: "cvmcmvufwbyrhhid"
                 }
             });
-            const textToSent = loginUserName + " has assign you a task on NodeExercise website. Sign Up to view that Todo. You can register yourself at http://localhost:3001/user/register";
+            let today = new Date();
+            const dateAndTime = today.toLocaleTimeString('it-IT');
+            const textToSent = loginUserName + " has assign you a task on NodeExercise website. Sign Up to view that Task. You can register yourself at http://localhost:3001/user/register";
             var mailOptions = {
                 from: 'nodeexercise@gmail.com',
                 to: req.body.assignTo,
-                subject: 'Node JS Exercise 1',
+                subject: 'Node JS Exercise 1' + " - " + dateAndTime,
                 text: textToSent,
             };
             transporter.sendMail(mailOptions, function (error, info) {
                 return __awaiter(this, void 0, void 0, function* () {
                     if (error) {
-                        res.status(400).send(error);
+                        res.status(401).send(error);
                     }
                     else {
                         newAssignTask.assignBy = loginUserEmail;
@@ -96,7 +98,7 @@ const assignNewTask = (req, res) => __awaiter(void 0, void 0, void 0, function* 
                         const result = yield assignTaskObj.save();
                         return res.status(200).json({
                             "message": "Email send & New Task Assigned.",
-                            "Assign Task details": result
+                            "Assigned Task details": result
                         });
                     }
                 });

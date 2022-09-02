@@ -39,21 +39,19 @@ exports.getUserTasks = exports.deleteTask = exports.editTask = exports.addTask =
 const task_model_1 = __importDefault(require("../models/task.model"));
 const joi_1 = __importDefault(require("joi"));
 const _ = __importStar(require("lodash"));
-const userId = "630efb256a050af50ce3bb28";
 const addTask = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const taskSchema = joi_1.default.object({
-        taskTitle: joi_1.default.string().min(5).max(20).required(),
-        description: joi_1.default.string().min(5).max(100).required(),
-        dueDate: joi_1.default.string().regex(/^([1-9]|0[1-9]|[12][0-9]|3[0-1])\/([1-9]|0[1-9]|1[0-2])\/\d{4}$/).required(),
-    });
-    const { error } = taskSchema.validate(req.body);
-    if (error) {
-        return res.status(401).send(error.details[0].message);
-    }
     try {
-        let newTask = _.pick(req.body, ['taskTitle', 'description',
-            'dueDate']);
-        newTask.userId = userId;
+        const taskSchema = joi_1.default.object({
+            taskTitle: joi_1.default.string().min(5).max(20).required(),
+            description: joi_1.default.string().min(5).max(100).required(),
+            dueDate: joi_1.default.string().regex(/^([1-9]|0[1-9]|[12][0-9]|3[0-1])\/([1-9]|0[1-9]|1[0-2])\/\d{4}$/).required(),
+        });
+        const { error } = taskSchema.validate(req.body);
+        if (error) {
+            return res.status(401).send(error.details[0].message);
+        }
+        let newTask = _.pick(req.body, ['taskTitle', 'description', 'dueDate']);
+        newTask.userId = req.user._id;
         newTask.assignBy = "self";
         const user = new task_model_1.default(newTask);
         const result = yield user.save();
@@ -68,27 +66,35 @@ const addTask = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
 });
 exports.addTask = addTask;
 const editTask = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const taskSchema = joi_1.default.object({
-        taskTitle: joi_1.default.string().min(5).max(20),
-        description: joi_1.default.string().min(5).max(100),
-        dueDate: joi_1.default.string().regex(/^([1-9]|0[1-9]|[12][0-9]|3[0-1])\/([1-9]|0[1-9]|1[0-2])\/\d{4}$/),
-    });
-    const { error } = taskSchema.validate(req.body);
-    if (error) {
-        return res.status(401).send(error.details[0].message);
-    }
     try {
+        const tokenUserId = req.user._id;
         const taskId = req.params.id;
+        const taskExist = yield task_model_1.default.findById(taskId).select('userId');
+        if (taskExist) {
+            const userId = taskExist.userId.toString();
+            if (tokenUserId !== userId) {
+                return res.status(401).send("You cannot Edit other User's task.");
+            }
+        }
+        else {
+            return res.status(404).send(`Task with id ${taskId} does not exists.`);
+        }
+        const taskSchema = joi_1.default.object({
+            taskTitle: joi_1.default.string().min(5).max(20),
+            description: joi_1.default.string().min(5).max(100),
+            dueDate: joi_1.default.string().regex(/^([1-9]|0[1-9]|[12][0-9]|3[0-1])\/([1-9]|0[1-9]|1[0-2])\/\d{4}$/),
+        });
+        const { error } = taskSchema.validate(req.body);
+        if (error) {
+            return res.status(401).send(error.details[0].message);
+        }
         let updatedTask = yield task_model_1.default.findOneAndUpdate({ _id: taskId }, req.body, {
             new: true
         });
-        if (updatedTask) {
-            return res.status(200).send({
-                message: "Task successfully Edited.",
-                "Edited task": updatedTask
-            });
-        }
-        return res.status(200).send(`Task with id ${taskId} does not exists.`);
+        return res.status(200).send({
+            message: "Task successfully Edited.",
+            "Edited task": updatedTask
+        });
     }
     catch (error) {
         res.status(400).send(error);
@@ -97,15 +103,23 @@ const editTask = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
 exports.editTask = editTask;
 const deleteTask = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
+        const tokenUserId = req.user._id;
         const taskId = req.params.id;
-        let taskDeleted = yield task_model_1.default.findByIdAndDelete(taskId);
-        if (taskDeleted) {
-            return res.status(200).send({
-                message: "Task deleted",
-                Task: taskDeleted
-            });
+        const taskExist = yield task_model_1.default.findById(taskId).select('userId');
+        if (taskExist) {
+            const userId = taskExist.userId.toString();
+            if (tokenUserId !== userId) {
+                return res.status(401).send("You cannot delete other User's tasks.");
+            }
         }
-        return res.status(400).send(`Task with id ${taskId} does not exists.`);
+        else {
+            return res.status(404).send(`Task with id ${taskId} does not exists.`);
+        }
+        let taskDeleted = yield task_model_1.default.findByIdAndDelete(taskId);
+        return res.status(200).send({
+            message: "Task deleted",
+            Task: taskDeleted
+        });
     }
     catch (error) {
         res.status(400).send(error);
@@ -114,7 +128,11 @@ const deleteTask = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
 exports.deleteTask = deleteTask;
 const getUserTasks = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
+        const tokenUserId = req.user._id;
         const userId = req.params.userId;
+        if (tokenUserId !== userId) {
+            return res.status(400).send("You cannot view other User's tasks.");
+        }
         const userTasks = yield task_model_1.default.find({ userId: userId }).select('taskTitle description dueDate assignBy');
         if (userTasks.length > 0) {
             return res.status(200).send(userTasks);

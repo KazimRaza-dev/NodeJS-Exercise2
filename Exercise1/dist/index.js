@@ -34,11 +34,16 @@ const body_parser_1 = __importDefault(require("body-parser"));
 const user_route_1 = __importDefault(require("./routes/user.route"));
 const task_route_1 = __importDefault(require("./routes/task.route"));
 const assignTask_route_1 = __importDefault(require("./routes/assignTask.route"));
+const loggingRequests_1 = __importDefault(require("./middlewares/loggingRequests"));
 const config_1 = __importDefault(require("./DB/config"));
 (0, config_1.default)();
 dotenv.config();
 if (!process.env.PORT) {
     console.log("Exiting program..");
+    process.exit(1);
+}
+if (!process.env.jwtPrivateKey) {
+    console.log("FATAL ERROR! jwt private key not defined.");
     process.exit(1);
 }
 const app = (0, express_1.default)();
@@ -48,8 +53,9 @@ app.use(body_parser_1.default.json());
 app.use(body_parser_1.default.urlencoded({
     extended: false
 }));
+app.use(loggingRequests_1.default);
 app.get("/", (req, res) => {
-    res.send("hello worlds");
+    res.send("Node Exercise 1 started.");
 });
 app.use("/user", user_route_1.default);
 app.use("/task", task_route_1.default);

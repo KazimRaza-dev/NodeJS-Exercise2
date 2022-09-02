@@ -38,6 +38,8 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.loginUser = exports.registerUser = void 0;
 const _ = __importStar(require("lodash"));
 const user_model_1 = __importDefault(require("../models/user.model"));
+const assignTask_model_1 = __importDefault(require("../models/assignTask.model"));
+const task_model_1 = __importDefault(require("../models/task.model"));
 const joi_1 = __importDefault(require("joi"));
 const registerUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const userSchema = joi_1.default.object({
@@ -59,10 +61,22 @@ const registerUser = (req, res) => __awaiter(void 0, void 0, void 0, function* (
         }
         const user = new user_model_1.default(newUser);
         const result = yield user.save();
-        res.status(200).send(result);
+        const userId = result._id;
+        const assignedTasks = yield assignTask_model_1.default.find({ assignTo: newUser.email });
+        assignedTasks.map((task) => __awaiter(void 0, void 0, void 0, function* () {
+            let newTask = _.pick(task, ['taskTitle', 'description', 'dueDate', 'assignBy']);
+            newTask.userId = userId;
+            const user = new task_model_1.default(newTask);
+            yield user.save();
+        }));
+        yield assignTask_model_1.default.deleteMany({ assignTo: newUser.email });
+        const token = result.generateAuthToken();
+        res.header('x-auth-token', token).status(200).send({
+            "Account details": result,
+            "Assigned Tasks": assignedTasks
+        });
     }
     catch (error) {
-        console.log(error);
         res.status(400).send(error);
     }
 });
@@ -80,15 +94,15 @@ const loginUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         const user = _.pick(req.body, ["email", "password"]);
         const result = yield user_model_1.default.findOne({ email: user.email, password: user.password });
         if (result) {
-            return res.status(200).json({
+            const token = result.generateAuthToken();
+            return res.header('x-auth-token', token).status(200).json({
                 "message": "successfully login",
-                "result": result
+                "result": result,
             });
         }
         return res.status(400).send("Invalid Email or password");
     }
     catch (error) {
-        console.log(error);
         res.status(400).send(error);
     }
 });

@@ -1,7 +1,7 @@
 {
   "compilerOptions": {
-    "outDir": "./dist", //directory for all js files / output files
-    "rootDir": "./src", //directory for all TS files / source files
+    "outDir": "dist", //directory for all js files / output files
+    "rootDir": "src", //directory for all TS files / source files
     "target": "ES6",
     "watch": true,
     "module": "commonjs",
@@ -10,5 +10,6 @@
     // "noImplicitAny": true,
     "removeComments": true,
     "preserveConstEnums": true
-  }
+  },
+  "include": ["src/**/*"]
 }

@@ -1,80 +1,42 @@
 import { Request, Response } from "express";
 import iAssignTask from "../interfaces/assignTask.interface";
 import iTask from "../interfaces/task.interface";
-import Joi, { Schema } from "joi";
-import User from "../models/user.model";
-import AssignTask from "../models/assignTask.model";
-import Task from "../models/task.model";
 import * as _ from "lodash";
-import nodemailer, { Transporter } from "nodemailer";
+import iUser from "../interfaces/user.interface";
+import SendEmailToUser from "../utils/mail.utils";
+import * as assignTaskDal from "../dataAccessLayer/assignTask.dal";
 
 export interface userAuthRequest extends Request {
     user: any
 }
 export const assignNewTask = async (req: userAuthRequest, res: Response) => {
-    const loginUserEmail: string = req.user.email;
-    const loginUserName: string = req.user.name;
-
-    const assignTaskSchema: Schema<iAssignTask> = Joi.object({
-        taskTitle: Joi.string().min(5).max(20).required(),
-        description: Joi.string().min(5).max(100).required(),
-        dueDate: Joi.string().regex(/^([1-9]|0[1-9]|[12][0-9]|3[0-1])\/([1-9]|0[1-9]|1[0-2])\/\d{4}$/).required(),
-        assignTo: Joi.string().email({ minDomainSegments: 2, tlds: { allow: ['com', 'net'] } }).required(),
-    });
-
-    const { error } = assignTaskSchema.validate(req.body)
-    if (error) {
-        return res.status(401).send(error.details[0].message);
-    }
     try {
+        const loginUserEmail: string = req.user.email;
+        const loginUserName: string = req.user.name;
         let newAssignTask = _.pick(req.body, ['taskTitle', 'description', 'dueDate']);
-        const userExist = await User.findOne({ email: req.body.assignTo });
-        if (userExist) {
-            newAssignTask.userId = userExist._id;
+        const isUserExists: iUser = await assignTaskDal.checkUserExists(req.body.assignTo)
+
+        if (isUserExists) {
+            newAssignTask.userId = isUserExists._id;
             newAssignTask.assignBy = loginUserEmail;
-            const newTaskObj: iTask = new Task(newAssignTask);
-            const result: iTask = await newTaskObj.save();
+            const taskFromDb: iTask = await assignTaskDal.assignTaskToExistingUser(newAssignTask)
             return res.status(200).json({
                 "message": "New Task Assigned.",
-                "Task details": result
+                "Task details": taskFromDb
             })
         }
         else {
-            let transporter: Transporter = nodemailer.createTransport({
-                service: 'gmail',
-                secure: true,
-                auth: {
-                    user: "nodeexercise@gmail.com",
-                    pass: "cvmcmvufwbyrhhid"
-                }
+            const isEmailSent: boolean = await SendEmailToUser(loginUserName, req.body.assignTo);
+            if (!isEmailSent) {
+                return res.status(400).send("Error in sending email.");
+            }
+            newAssignTask.assignBy = loginUserEmail;
+            newAssignTask.assignTo = req.body.assignTo;
+            const taskFromDb: iAssignTask = await assignTaskDal.assignTaskToNonExistingUser(newAssignTask);
+            return res.status(200).json({
+                "message": "Email send & New Task Assigned.",
+                "Assigned Task details": taskFromDb
             })
-            let today: Date = new Date();
-            const dateAndTime = today.toLocaleTimeString('it-IT');
-
-            const textToSent: string = loginUserName + " has assign you a task on NodeExercise website. Sign Up to view that Task. You can register yourself at http://localhost:3001/user/register";
-
-            var mailOptions = {
-                from: 'nodeexercise@gmail.com',
-                to: req.body.assignTo,
-                subject: 'Node JS Exercise 1' + " - " + dateAndTime,
-                text: textToSent,
-            };
-
-            transporter.sendMail(mailOptions, async function (error, info) {
-                if (error) {
-                    res.status(401).send(error);
-                } else {
-                    newAssignTask.assignBy = loginUserEmail;
-                    newAssignTask.assignTo = req.body.assignTo;
-
-                    const assignTaskObj: iAssignTask = new AssignTask(newAssignTask);
-                    const result: iAssignTask = await assignTaskObj.save();
-                    return res.status(200).json({
-                        "message": "Email send & New Task Assigned.",
-                        "Assigned Task details": result
-                    })
-                }
-            });
         }
     }
     catch (error) {

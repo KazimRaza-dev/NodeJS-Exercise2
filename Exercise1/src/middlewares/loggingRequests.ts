@@ -6,18 +6,18 @@ const loggingApiRequests = (request: Request, response: Response, next) => {
     try {
         const { rawHeaders, httpVersion, method, socket, url } = request;
         const { remoteAddress, remoteFamily } = socket;
-        const data =
+        const logData =
             `TimeStamp: ${Date.now()}\nRawHeaders: ${JSON.stringify(rawHeaders)}\nhttpVersion: ${httpVersion}\nmethod: ${method}\nRemoteAddress: ${remoteAddress}\nRemoteFamily: ${remoteFamily}\nurl: ${url}\n\n`;
 
         var filePath = path.join(__dirname, '..', 'requestLogging', 'logs.txt');
-        fs.appendFile(filePath, data, 'utf8',
+        fs.appendFile(filePath, logData, 'utf8',
             function (err) {
                 if (err) throw err;
             });
         next();
     }
     catch (ex) {
-        response.status(400).send('Error while logging request to file.')
+        return response.status(500).send('Error while logging request to file.')
     }
 }
 

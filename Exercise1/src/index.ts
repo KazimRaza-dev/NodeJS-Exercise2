@@ -1,16 +1,16 @@
 import express, { Express, Request, Response } from "express";
 import * as dotenv from "dotenv";
-import cors from "cors";
 import helmet from "helmet";
 import bodyParser from "body-parser";
 import userRouter from "./routes/user.route";
 import taskRouter from "./routes/task.route";
 import assignTaskRouter from "./routes/assignTask.route";
 import loggingApiRequests from "./middlewares/loggingRequests";
-import connectToMongoDB from "./DB/config";
+import connectToMongoDB from "./config/config";
 connectToMongoDB();
 
 dotenv.config();
+const app: Express = express();
 if (!process.env.PORT) {
     console.log("Exiting program..");
     process.exit(1);
@@ -19,9 +19,6 @@ if (!process.env.jwtPrivateKey) {
     console.log("FATAL ERROR! jwt private key not defined.");
     process.exit(1);
 }
-
-const app: Express = express();
-app.use(cors());
 app.use(helmet());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({

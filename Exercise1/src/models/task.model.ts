@@ -19,11 +19,6 @@ const taskSchema: Schema = new Schema<iTask>({
         required: true,
         trim: true
     },
-    // status: {
-    //     type: String,
-    //     required: true,
-    //     enum: ["active", "pending"]
-    // },
 
     assignBy: {
         type: String,

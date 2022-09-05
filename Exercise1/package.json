@@ -4,8 +4,10 @@
   "description": "Exercise 1 of node exercises",
   "main": "index.js",
   "scripts": {
-    "dev": "concurrently \"npx tsc --watch\" \"nodemon -q dist/index.js\""
-  },
+    "dev": "nodemon src/index.ts",
+   "build": "tsc -p .",
+   "start": "node dist/index.js"
+    },
   "author": "Kazim Raza",
   "license": "ISC",
   "dependencies": {

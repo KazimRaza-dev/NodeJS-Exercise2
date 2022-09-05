@@ -2,9 +2,7 @@ import express, { Express, Request, Response } from "express";
 import * as dotenv from "dotenv";
 import helmet from "helmet";
 import bodyParser from "body-parser";
-import userRouter from "./routes/user.route";
-import taskRouter from "./routes/task.route";
-import assignTaskRouter from "./routes/assignTask.route";
+import routes from "./routes/routes"
 import loggingApiRequests from "./middlewares/loggingRequests";
 import connectToMongoDB from "./config/config";
 connectToMongoDB();
@@ -26,12 +24,7 @@ app.use(bodyParser.urlencoded({
 }));
 
 app.use(loggingApiRequests);
-app.get("/", (req: Request, res: Response) => {
-    res.send("Node Exercise 1 started.");
-})
-app.use("/user", userRouter);
-app.use("/task", taskRouter);
-app.use("/assigntask", assignTaskRouter);
+app.use(routes);
 
 const PORT: number = parseInt(process.env.PORT as string, 10);
 app.listen(PORT, () => {

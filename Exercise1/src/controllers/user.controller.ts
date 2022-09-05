@@ -1,45 +1,42 @@
 import { Request, Response } from "express";
 import * as _ from "lodash";
-import iUser from "../interfaces/user.interface";
-import iAssignTask from "../interfaces/assignTask.interface";
-import * as userDal from "../dataAccessLayer/user.dal";
+import userBLL from "../businessLogicLayer/user.bll";
 
-export const registerUser = async (req: Request, res: Response) => {
-    try {
-        let userToRegister = _.pick(req.body, ['email', 'password', 'fname', 'lname']);
-        const isUserAlreadyExist: iUser = await userDal.isUserAlreadyExists(userToRegister.email)
-        if (isUserAlreadyExist) {
-            return res.status(400).send("Email already Exist.")
+const userController = {
+    registerUser: async (req: Request, res: Response) => {
+        try {
+            let userToRegister = _.pick(req.body, ['email', 'password', 'fname', 'lname']);
+            const result = await userBLL.registerNewUser(userToRegister);
+            if (result.status === false) {
+                return res.status(400).send("Email already Exist.")
+            }
+            const token = result.userFromDb.generateAuthToken();
+            res.header('x-auth-token', token).status(200).send({
+                "Account details": result.userFromDb,
+                "Assigned Tasks": result.assignedTasks
+            });
         }
-        const userFromDb: iUser = await userDal.createNewUser(userToRegister);
-        const assignedTasks: iAssignTask[] = await userDal.assignTaskToNewUser(userFromDb, userToRegister.email);
-
-        const token = userFromDb.generateAuthToken();
-        res.header('x-auth-token', token).status(200).send({
-            "Account details": userFromDb,
-            "Assigned Tasks": assignedTasks
-        });
-    }
-    catch (error) {
-        res.status(400).send(error)
-    }
-}
-
-export const loginUser = async (req: Request, res: Response) => {
-    try {
-        const user = _.pick(req.body, ["email", "password"]);
-        const userFromDb: iUser = await userDal.checkLoginCredientials(user.email, user.password);
-
-        if (userFromDb) {
-            const token = userFromDb.generateAuthToken();
+        catch (error) {
+            res.status(400).send(error)
+        }
+    },
+    loginUser: async (req: Request, res: Response) => {
+        try {
+            const user = _.pick(req.body, ["email", "password"]);
+            const loginResult = await userBLL.loginUserBll(user);
+            if (loginResult.status === false) {
+                return res.status(400).send("Invalid Email or password")
+            }
+            const token = loginResult.userFromDb.generateAuthToken();
             return res.header('x-auth-token', token).status(200).json({
                 "message": "successfully login",
-                "User": userFromDb,
+                "User": loginResult.userFromDb,
             })
         }
-        return res.status(400).send("Invalid Email or password")
-    }
-    catch (error) {
-        res.status(400).send(error)
+        catch (error) {
+            res.status(400).send(error)
+        }
     }
 }
+export default userController;
+

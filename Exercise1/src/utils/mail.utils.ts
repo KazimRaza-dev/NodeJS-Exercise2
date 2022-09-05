@@ -1,14 +1,19 @@
 import * as _ from "lodash";
 import nodemailer, { Transporter } from "nodemailer";
+import * as dotenv from "dotenv";
+dotenv.config();
 
 const SendEmailToUser = async (loginUserName: string, assignTo: string) => {
     try {
+        const email: string = process.env.email;
+        const password: string = process.env.emailPassword;
+
         let transporter: Transporter = nodemailer.createTransport({
             service: 'gmail',
             secure: true,
             auth: {
-                user: "nodeexercise@gmail.com",
-                pass: "cvmcmvufwbyrhhid"
+                user: email,
+                pass: password
             }
         })
         let today: Date = new Date();
@@ -17,12 +22,11 @@ const SendEmailToUser = async (loginUserName: string, assignTo: string) => {
         const textToSent: string = loginUserName + " has assign you a task on NodeExercise website. Sign Up to view that Task. You can register yourself at http://localhost:3001/user/register";
 
         var mailOptions = {
-            from: 'nodeexercise@gmail.com',
+            from: email,
             to: assignTo,
             subject: 'Node JS Exercise 1' + " - " + dateAndTime,
             text: textToSent,
         };
-
         const { error } = await transporter.sendMail(mailOptions);
         if (error) {
             console.log(error);

@@ -9,6 +9,7 @@
   "author": "Kazim Raza",
   "license": "ISC",
   "dependencies": {
+    "bcrypt": "^5.0.1",
     "body-parser": "^1.20.0",
     "concurrently": "^7.3.0",
     "cors": "^2.8.5",

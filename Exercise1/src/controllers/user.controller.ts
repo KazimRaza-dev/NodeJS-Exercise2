@@ -5,13 +5,17 @@ import userBLL from "../businessLogicLayer/user.bll";
 const userController = {
     registerUser: async (req: Request, res: Response) => {
         try {
-            let userToRegister = _.pick(req.body, ['email', 'password', 'fname', 'lname']);
+            let userToRegister = _.pick(req.body, ['email', 'password', 'fname', 'lname', 'role']);
             const result = await userBLL.registerNewUser(userToRegister);
             if (result.status === false) {
                 return res.status(400).send("Email already Exist.")
             }
-            const token = result.userFromDb.generateAuthToken();
-            res.header('x-auth-token', token).status(200).send({
+            // const token = result.userFromDb.generateAuthToken();
+            // res.header('x-auth-token', token).status(200).send({
+            //     "Account details": result.userFromDb,
+            //     "Assigned Tasks": result.assignedTasks
+            // });
+            res.status(200).send({
                 "Account details": result.userFromDb,
                 "Assigned Tasks": result.assignedTasks
             });
@@ -22,10 +26,10 @@ const userController = {
     },
     loginUser: async (req: Request, res: Response) => {
         try {
-            const user = _.pick(req.body, ["email", "password"]);
+            const user = _.pick(req.body, ["email", "password", "role"]);
             const loginResult = await userBLL.loginUserBll(user);
             if (loginResult.status === false) {
-                return res.status(400).send("Invalid Email or password")
+                return res.status(400).send("Invalid Email, password or role")
             }
             const token = loginResult.userFromDb.generateAuthToken();
             return res.header('x-auth-token', token).status(200).json({

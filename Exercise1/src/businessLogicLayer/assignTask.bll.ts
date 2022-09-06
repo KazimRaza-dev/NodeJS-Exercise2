@@ -10,7 +10,7 @@ const assignTaskBll = {
         const isUserExists: iUser = await assignTaskDal.checkUserExists(assignTo);
         if (isUserExists) {
             newAssignTask.userId = isUserExists._id;
-            newAssignTask.assignBy = loginUserEmail;
+            newAssignTask.status = "new";
             const taskFromDb: iTask = await assignTaskDal.assignTaskToExistingUser(newAssignTask);
             return {
                 status: true,
@@ -26,7 +26,6 @@ const assignTaskBll = {
                     message: "Error in sending email.",
                 }
             }
-            newAssignTask.assignBy = loginUserEmail;
             newAssignTask.assignTo = assignTo;
             const taskFromDb: iAssignTask = await assignTaskDal.assignTaskToNonExistingUser(newAssignTask);
             return {

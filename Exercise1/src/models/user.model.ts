@@ -14,8 +14,6 @@ const userSchema: Schema = new Schema<iUser>({
         type: String,
         required: true,
         trim: true,
-        minLength: 5,
-        maxLength: 12
     },
     fname: {
         type: String,
@@ -26,11 +24,16 @@ const userSchema: Schema = new Schema<iUser>({
         type: String,
         required: true,
         trim: true
+    },
+    role: {
+        type: String,
+        required: true,
+        enum: ["admin", "member"]
     }
 });
 
 userSchema.methods.generateAuthToken = function () {
-    const token = jwt.sign({ _id: this._id, email: this.email, name: this.fname + " " + this.lname }, process.env.jwtPrivateKey, { expiresIn: '2h' });
+    const token = jwt.sign({ _id: this._id, email: this.email, name: this.fname + " " + this.lname, role: this.role }, process.env.jwtPrivateKey, { expiresIn: '2h' });
     return token;
 }
 

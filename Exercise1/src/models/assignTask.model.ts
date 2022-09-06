@@ -19,10 +19,6 @@ const assignTaskSchema: Schema = new Schema<iAssignTask>({
         required: true,
         trim: true
     },
-    assignBy: {
-        type: String,
-        required: true,
-    },
     assignTo: {
         type: String,
         required: true,

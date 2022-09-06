@@ -1,3 +1,4 @@
+
 import { Schema, Model, model, Types } from "mongoose";
 import iTask from "../interfaces/task.interface";
 
@@ -19,10 +20,10 @@ const taskSchema: Schema = new Schema<iTask>({
         required: true,
         trim: true
     },
-
-    assignBy: {
+    status: {
         type: String,
         required: true,
+        enum: ["new", "in progress", "done"]
     },
     userId: {
         type: Types.ObjectId,

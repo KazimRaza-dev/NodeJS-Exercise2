@@ -9,7 +9,7 @@ const taskBLL = {
         return result;
     },
 
-    isTaskAlreadyExists: async (taskId: string, tokenUserId: string) => {
+    isTaskAlreadyExists: async (taskId: string, tokenUserId: string, operation: string) => {
         const isTaskExist: iTask = await taskDal.checkTaskExist(taskId);
         if (isTaskExist) {
             const userId: string = isTaskExist.userId.toString();
@@ -17,7 +17,7 @@ const taskBLL = {
                 return {
                     isError: true,
                     statusCode: 401,
-                    msg: "You cannot Edit other User's task."
+                    msg: `You cannot ${operation} other User's task.`
                 }
             }
         } else {
@@ -45,6 +45,23 @@ const taskBLL = {
     getAllAddedTasks: async (userId: string): Promise<iTask[]> => {
         const userTasks: iTask[] = await taskDal.getUserAllTasks(userId);
         return userTasks;
+    },
+
+    getAllDbTasks: async () => {
+        const allTasks = await taskDal.getAllTasks();
+        return allTasks;
+    },
+
+    changeTaskStatus: async (taskId: string, newStatus: string): Promise<boolean> => {
+        const isStatusChanged: boolean = await taskDal.changeTaskStatus(taskId, newStatus);
+        return isStatusChanged;
+    },
+
+    changeTaskStatusAdmin: async (taskId: string, newStatus: string) => {
+        const editedTask = await taskDal.changeTaskStatusAdmin(taskId, newStatus);
+        return editedTask;
     }
+
+
 }
 export default taskBLL;

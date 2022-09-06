@@ -6,6 +6,7 @@ interface iUser extends Document {
     password: string,
     fname: string,
     lname: string,
+    role: string,
     generateAuthToken: Function
 }
 export default iUser;

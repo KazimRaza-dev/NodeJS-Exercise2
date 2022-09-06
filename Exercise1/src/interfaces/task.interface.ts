@@ -5,7 +5,7 @@ interface iTask extends Document {
     taskTitle: string,
     description: string,
     dueDate: string,
-    assignBy: string,
+    status: string,
     userId: { type: Types.ObjectId, ref: 'users' }
 }
 export default iTask;

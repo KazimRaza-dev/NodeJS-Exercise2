@@ -1,7 +1,9 @@
 import iTask from "../interfaces/task.interface";
 import * as _ from "lodash";
 import taskDal from "../dataAccessLayer/task.dal";
-import exp from "constants";
+import { UploadedFile } from "express-fileupload";
+import validateTasksFile from "../middlewares/validateRequest/tasksFileValidator"
+import { ValidationError } from "joi";
 
 const taskBLL = {
     addNewTaskBll: async (reqTask): Promise<iTask> => {
@@ -9,7 +11,7 @@ const taskBLL = {
         return result;
     },
 
-    isTaskAlreadyExists: async (taskId: string, tokenUserId: string, operation: string) => {
+    checkMemberAccess: async (taskId: string, tokenUserId: string, operation: string) => {
         const isTaskExist: iTask = await taskDal.checkTaskExist(taskId);
         if (isTaskExist) {
             const userId: string = isTaskExist.userId.toString();
@@ -20,7 +22,8 @@ const taskBLL = {
                     msg: `You cannot ${operation} other User's task.`
                 }
             }
-        } else {
+        }
+        else {
             return {
                 isError: true,
                 statusCode: 400,
@@ -42,13 +45,13 @@ const taskBLL = {
         return taskDeleted;
     },
 
-    getAllAddedTasks: async (userId: string): Promise<iTask[]> => {
-        const userTasks: iTask[] = await taskDal.getUserAllTasks(userId);
+    getAllAddedTasks: async (userId: string, pageno: number = 1, pageSize: number = 5): Promise<iTask[]> => {
+        const userTasks: iTask[] = await taskDal.getUserAllTasks(userId, pageno, pageSize);
         return userTasks;
     },
 
-    getAllDbTasks: async () => {
-        const allTasks = await taskDal.getAllTasks();
+    getAllDbTasks: async (pageNo = 1, pageSize = 5) => {
+        const allTasks = await taskDal.getAllTasks(pageNo, pageSize);
         return allTasks;
     },
 
@@ -60,8 +63,38 @@ const taskBLL = {
     changeTaskStatusAdmin: async (taskId: string, newStatus: string) => {
         const editedTask = await taskDal.changeTaskStatusAdmin(taskId, newStatus);
         return editedTask;
+    },
+
+    searchTasks: async (keywordToSearch: string) => {
+        keywordToSearch = keywordToSearch.toLowerCase();
+        const searchResult = await taskDal.searchTask(keywordToSearch);
+        return searchResult;
+    },
+
+    importTasksFile: async (tasksFile: UploadedFile, userId): Promise<{
+        error: ValidationError;
+        fileData?: undefined;
+    } | {
+        fileData: iTask[];
+        error?: undefined;
+    }> => {
+        try {
+            const fileData: iTask[] = JSON.parse(tasksFile.data.toString("utf8"));
+            const { error } = validateTasksFile(fileData);
+            if (error) {
+                return { error };
+            }
+            await Promise.all(
+                fileData.map((task) => {
+                    task.status = "new";
+                    task.userId = userId;
+                    taskDal.createNewTask(task)
+                })
+            )
+            return { fileData };
+        } catch (error) {
+            return { error };
+        }
     }
-
-
 }
 export default taskBLL;

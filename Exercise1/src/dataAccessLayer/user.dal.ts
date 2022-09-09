@@ -9,44 +9,86 @@ import { Types } from "mongoose";
 import passwordHashing from "../utils/hashPassword.utils";
 
 const userDal = {
-    isUserAlreadyExists: async (userEmail: string): Promise<iUser> => {
-        const isUserAlreadyExist: iUser = await User.findOne({ email: userEmail });
-        return isUserAlreadyExist;
+    isUserAlreadyExists: async (userEmail: string) => {
+        try {
+            const isUserAlreadyExist: iUser = await User.findOne({ email: userEmail });
+            return { isUserAlreadyExist };
+        } catch (error) {
+            return { error }
+        }
     },
 
-    createNewUser: async (userToRegister): Promise<iUser> => {
-        const user: iUser = new User(userToRegister);
-        const userFromDb: iUser = await user.save();
-        return userFromDb;
+    createNewUser: async (userToRegister) => {
+        try {
+            const user: iUser = new User(userToRegister);
+            const userFromDb: iUser = await user.save();
+            return { userFromDb };
+        }
+        catch (err) {
+            return { err }
+        }
     },
 
     assignTaskToNewUser: async (userFromDb: iUser, userEmail: string): Promise<iAssignTask[]> => {
-        const userId: Types.ObjectId = userFromDb._id;
-        const assignedTasks: iAssignTask[] = await AssignTask.find({ assignTo: userEmail });
-        if (assignedTasks.length > 0) {
-            assignedTasks.map(async (task) => {
-                let newTask = _.pick(task, ['taskTitle', 'description', 'dueDate']);
-                newTask.userId = userId;
-                newTask.status = "new";
-                const userTask: iTask = new Task(newTask);
-                await userTask.save();
-            });
-            await AssignTask.deleteMany({ assignTo: userEmail })
+        try {
+            const userId: Types.ObjectId = userFromDb._id;
+            const assignedTasks: iAssignTask[] = await AssignTask.find({ assignTo: userEmail });
+            if (assignedTasks.length > 0) {
+                assignedTasks.map(async (task) => {
+                    let newTask = _.pick(task, ['taskTitle', 'description', 'dueDate']);
+                    newTask.userId = userId;
+                    newTask.status = "new";
+                    const userTask: iTask = new Task(newTask);
+                    await userTask.save();
+                });
+                await AssignTask.deleteMany({ assignTo: userEmail })
+            }
+            return assignedTasks;
+        } catch (error) {
+            throw new Error(error);
         }
-        return assignedTasks;
     },
 
     checkLoginCredientials: async (userEmail: string, userPassword: string, userRole: string): Promise<iUser> => {
-        const userFromDb: iUser = await User.findOne({ email: userEmail, role: userRole });
-        if (userFromDb) {
-            const isPasswordCorrect = await passwordHashing.unhashPassword(userPassword, userFromDb.password);
-            if (isPasswordCorrect) {
-                return userFromDb;
+        try {
+            const userFromDb: iUser = await User.findOne({ email: userEmail, role: userRole });
+            if (userFromDb) {
+                const isPasswordCorrect = await passwordHashing.unhashPassword(userPassword, userFromDb.password);
+                if (isPasswordCorrect) {
+                    return userFromDb;
+                }
+                return null;
             }
-            return null;
+            return userFromDb;
+        } catch (error) {
+            throw new Error(error);
         }
-        return userFromDb;
     },
+
+    getAllUsers: async (pageNo: number, pageSize: number): Promise<iUser[]> => {
+        try {
+            const skip = (pageNo - 1) * pageSize;
+            const allUsers: iUser[] = await User.find({ "role": "member" }).select("-password")
+                .skip(skip).limit(pageSize)
+            return allUsers;
+        } catch (error) {
+            throw new Error(error);
+        }
+    },
+
+    changeUserRole: async (userId: string, newRole: string) => {
+        try {
+            const updatedRole = await User.findByIdAndUpdate(userId, {
+                role: newRole
+            }, {
+                new: true
+            });
+            return updatedRole;
+        } catch (error) {
+            throw new Error(error);
+        }
+    }
+
 }
 export default userDal;
 

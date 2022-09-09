@@ -1,0 +1,17 @@
+[
+  {
+    "taskTitle": "Exercise 1",
+    "description": "Do Exercise 1 of Node.",
+    "dueDate": "10/09/2022"
+  },
+  {
+    "taskTitle": "Exercise 2",
+    "description": "Do Exercise 2 of Node.",
+    "dueDate": "12/09/2022"
+  },
+  {
+    "taskTitle": "Exercise 3",
+    "description": "Do Exercise 3 of Node.",
+    "dueDate": "14/09/2022"
+  }
+]

@@ -7,6 +7,7 @@ import validateEditTaskReq from "../middlewares/validateRequest/editTaskValidato
 import validateChangeTask from "../middlewares/validateRequest/changeStatusReq";
 import adminAuth from "../middlewares/adminAuth";
 
+
 taskRouter.post("/task/addtask", authMiddleware, validateTaskReq, taskController.addTask);
 
 taskRouter.put("/task/edittask/:id", authMiddleware, validateEditTaskReq, taskController.editTask);
@@ -20,5 +21,9 @@ taskRouter.get("/task/getusertasks/:userId", authMiddleware, taskController.getU
 taskRouter.get("/task/getalltasks", adminAuth, taskController.getAllTasks);
 
 taskRouter.put("/task/changestatus/:id", authMiddleware, validateChangeTask, taskController.changeTaskStatus);
+
+taskRouter.get("/task/search", adminAuth, taskController.searchingTasks);
+
+taskRouter.post("/task/import-bulk", authMiddleware, taskController.importTasksInBulk);
 
 export default taskRouter;

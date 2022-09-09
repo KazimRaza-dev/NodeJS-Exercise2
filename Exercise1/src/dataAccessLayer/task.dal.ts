@@ -27,29 +27,39 @@ const taskDal = {
         return taskDeleted;
     },
 
-    getUserAllTasks: async (userId: string): Promise<iTask[]> => {
-        const userTasks: iTask[] = await Task.find({ userId: userId }).select('taskTitle description dueDate assignBy');
+    getUserAllTasks: async (userId: string, pageNo: number, pageSize: number): Promise<iTask[]> => {
+        const skip: number = (pageNo - 1) * pageSize;
+        const userTasks: iTask[] = await Task.find({ userId: userId }).select('taskTitle description dueDate assignBy').skip(skip).limit(pageSize);
         return userTasks;
     },
 
-    getAllTasks: async () => {
-        const result = await Task.aggregate(
-            [{
-                $lookup: {
-                    from: "users",
-                    localField: "userId",
-                    foreignField: "_id",
-                    as: "userinfo",
-                },
-            },
-            {
-                $project: {
-                    "userinfo.password": 0, "userinfo._id": 0,
-                    "userinfo.role": 0,
-                },
-            },],
-        );
-        return result;
+    getAllTasks: async (pageNo: number, pageSize: number) => {
+        const skip: number = (pageNo - 1) * pageSize;
+        try {
+            const result = await Task.aggregate(
+                [
+                    {
+                        $lookup: {
+                            from: "users",
+                            localField: "userId",
+                            foreignField: "_id",
+                            as: "userinfo",
+                        },
+                    },
+                    {
+                        $project: {
+                            "userinfo.password": 0, "userinfo._id": 0,
+                            "userinfo.role": 0,
+                        },
+                    },
+                    { "$skip": skip },
+                    { "$limit": parseInt(pageSize.toString()) }
+                ],
+            )
+            return result;
+        } catch (error) {
+            console.log(error);
+        }
     },
 
     changeTaskStatus: async (taskId: string, newStatus: string) => {
@@ -77,7 +87,12 @@ const taskDal = {
             new: true
         });
         return updatedStatus;
-    }
+    },
+
+    searchTask: async (keyword: string): Promise<iTask[]> => {
+        const searchResult: iTask[] = await Task.find({ "taskTitle": { $regex: keyword, "$options": "i" } });
+        return searchResult;
+    },
 
 }
 export default taskDal;

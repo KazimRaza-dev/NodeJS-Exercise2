@@ -5,6 +5,8 @@ import bodyParser from "body-parser";
 import routes from "./routes/routes"
 import loggingApiRequests from "./middlewares/loggingRequests";
 import connectToMongoDB from "./config/config";
+import fileUpload from "express-fileupload";
+import fs from "fs";
 connectToMongoDB();
 
 dotenv.config();
@@ -22,6 +24,7 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({
     extended: false
 }));
+app.use(fileUpload());
 
 app.use(loggingApiRequests);
 app.use(routes);

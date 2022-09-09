@@ -8,7 +8,7 @@ const validateTasksFile = (taskArray: iTask[]) => {
         dueDate: Joi.string().regex(/^([1-9]|0[1-9]|[12][0-9]|3[0-1])\/([1-9]|0[1-9]|1[0-2])\/\d{4}$/).required(),
     });
 
-    let tasksArraySchema = Joi.array().items(taskSchema)
+    const tasksArraySchema = Joi.array().items(taskSchema)
     return tasksArraySchema.validate(taskArray)
 }
 export default validateTasksFile;

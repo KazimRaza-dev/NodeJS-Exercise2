@@ -1,6 +1,6 @@
 import validateAssignTaskRequest from "./validateRequest/assignTaskValidator";
 import validateChangeTask from "./validateRequest/changeStatusReq";
-import validateChangeRoleRequest from "./validateRequest/changeStatusReq";
+import validateChangeRoleRequest from "./validateRequest/changeUserRole";
 import validateEditTaskRequest from "./validateRequest/editTaskValidator";
 import validateLoginRequest from "./validateRequest/loginReqValidator";
 import validateRegisterRequest from "./validateRequest/registerReqValidator";

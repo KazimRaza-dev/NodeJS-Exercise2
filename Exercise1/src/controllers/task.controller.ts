@@ -14,14 +14,14 @@ const taskController = {
             const reqTask = _.pick(req.body, ['taskTitle', 'description', 'dueDate']);
             reqTask.userId = req.user._id;
             reqTask.status = "new";
-            const result: iTask = await taskService.createTask(reqTask);
+            const task: iTask = await taskService.createTask(reqTask);
             res.status(200).json({
                 "message": "New Task Added.",
-                "Task details": result
+                "Task details": task
             });
         }
         catch (error) {
-            res.status(400).send(error)
+            res.status(400).send(error.message)
         }
     },
 
@@ -31,22 +31,22 @@ const taskController = {
             const taskId: string = req.params.id;
             const userRole: string = req.user.role;
             if (userRole === "member") {
-                const isTaskExist = await taskService.checkMemberAccess(taskId, tokenUserId, 'edit');
-                if (isTaskExist.isError) {
-                    return res.status(isTaskExist.statusCode).send(isTaskExist.msg);
+                const { failure, validUser } = await taskService.checkMemberAccess(taskId, tokenUserId, 'edit');
+                if (failure) {
+                    return res.status(failure.statusCode).send(failure.message);
                 }
             }
-            const updatedTask: iTask = await taskService.update(taskId, req.body);
-            if (updatedTask) {
-                return res.status(200).send({
-                    message: "Task successfully Edited.",
-                    "Edited task": updatedTask
-                });
+            const { task, failure } = await taskService.update(taskId, req.body);
+            if (failure) {
+                return res.status(failure.statusCode).send(failure.message);
             }
-            return res.status(404).send(`Task with id ${taskId} does not exists.`)
+            return res.status(200).json({
+                message: task.message,
+                task: task.updated
+            })
         }
         catch (error) {
-            res.status(400).send(error);
+            res.status(400).send(error.message);
         }
     },
 
@@ -56,21 +56,22 @@ const taskController = {
             const taskId: string = req.params.id;
             const userRole: string = req.user.role;
             if (userRole === "member") {
-                const isTaskExist = await taskService.checkMemberAccess(taskId, tokenUserId, 'delete');
-                if (isTaskExist.isError) {
-                    return res.status(isTaskExist.statusCode).send(isTaskExist.msg);
+                const { failure, validUser } = await taskService.checkMemberAccess(taskId, tokenUserId, 'delete');
+                if (failure) {
+                    return res.status(failure.statusCode).send(failure.message);
                 }
             }
-            const task: iTask = await taskService.delete(taskId);
-            if (task) {
-                return res.status(200).send({
-                    message: "Task deleted.", task: task
-                })
+            const { task, failure } = await taskService.delete(taskId);
+            if (failure) {
+                return res.status(failure.statusCode).send(failure.message);
             }
-            return res.status(404).send(`Task with id ${taskId} does not exists.`)
+            return res.status(200).json({
+                message: task.message,
+                task: task.deleted
+            })
         }
         catch (error) {
-            res.status(400).send(error);
+            res.status(400).send(error.message);
         }
     },
 
@@ -79,34 +80,34 @@ const taskController = {
             const tokenUserId: string = req.user._id;
             const userId: string = req.params.userId;
             const userRole: string = req.user.role;
-            let { pageno, size } = req.query as any;
+            const { pageno, size } = req.query as any;
             if (userRole === "member") {
                 if (tokenUserId !== userId) {
                     return res.status(401).send("You cannot view other User's tasks.")
                 }
             }
-            const userTasks: iTask[] = await taskService.getUserTasks(userId, pageno, size);
-            if (userTasks.length > 0) {
-                return res.status(200).send(userTasks);
+            const { failure, tasks } = await taskService.getUserTasks(userId, pageno, size);
+            if (failure) {
+                return res.status(failure.statusCode).send(failure.message);
             }
-            res.status(200).send("No Tasks exist for this user.");
+            return res.status(200).send(tasks.usertasks)
         }
         catch (error) {
-            res.status(400).send(error);
+            res.status(400).send(error.message);
         }
     },
 
     getAllTasks: async (req: Request, res: Response) => {
         try {
-            let { pageno, size } = req.query as any;
-            const tasks: iTask[] = await taskService.getAllTasks(pageno, size);
-            if (tasks.length > 0) {
-                return res.status(200).send(tasks);
+            const { pageno, size } = req.query as any;
+            const { failure, tasks } = await taskService.getAllTasks(pageno, size);
+            if (failure) {
+                return res.status(failure.statusCode).send(failure.message);
             }
-            res.status(200).send("No Tasks added.");
+            return res.status(200).send(tasks.alltasks);
         }
         catch (error) {
-            res.status(400).send(error);
+            res.status(400).send(error.message);
         }
     },
 
@@ -117,26 +118,28 @@ const taskController = {
             const taskId: string = req.params.id;
             const newStatus = req.body.newStatus;
             if (userRole === "admin") {
-                const editedTask = await taskService.changeTaskStatusAdmin(taskId, newStatus);
-                if (editedTask) {
+                const { notUpdated, updated } = await taskService.changeTaskStatusAdmin(taskId, newStatus);
+                if (updated) {
                     return res.status(200).send({
-                        message: "Task status updated.", task: editedTask
+                        message: updated.message, task: updated.task
                     })
                 }
-                return res.status(404).send(`Task with id ${taskId} does not exists.`)
+                return res.status(notUpdated.statusCode).send(notUpdated.message)
             }
-            const isTaskExist = await taskService.checkMemberAccess(taskId, tokenUserId, 'change status of');
-            if (isTaskExist.isError) {
-                return res.status(isTaskExist.statusCode).send(isTaskExist.msg);
+
+            const { failure, validUser } = await taskService.checkMemberAccess(taskId, tokenUserId, 'change status of');
+            if (failure) {
+                return res.status(failure.statusCode).send(failure.message);
             }
-            const isStatusChanged: boolean = await taskService.changeStatus(taskId, newStatus);
-            if (isStatusChanged) {
-                return res.status(200).send(`Status of task changed to '${newStatus}'.`);
+
+            const { updated, notUpdated } = await taskService.changeStatus(taskId, newStatus);
+            if (updated) {
+                return res.status(200).send(updated.message)
             }
-            res.status(400).send("Status of task can only be changed in flow. New -> In progress -> done");
+            return res.status(notUpdated.statusCode).send(notUpdated.message)
         }
         catch (error) {
-            res.status(400).send(error);
+            res.status(400).send(error.message);
         }
     },
 
@@ -146,17 +149,17 @@ const taskController = {
             if (!keywordToSearch) {
                 return res.status(400).send("keyword for searching is required.");
             }
-            const matchedTasks: iTask[] = await taskService.search(keywordToSearch);
-            if (matchedTasks.length > 0) {
-                return res.status(200).send({
-                    message: `${matchedTasks.length} results found.`,
-                    "Search results": matchedTasks
-                });
+            const { failure, tasks } = await taskService.search(keywordToSearch);
+            if (failure) {
+                return res.status(failure.statusCode).send(failure.message);
             }
-            res.status(404).send("No Tasks found.");
+            return res.status(200).send({
+                message: tasks.message,
+                tasks: tasks.matched
+            });
         }
         catch (error) {
-            res.status(400).send(error);
+            res.status(400).send(error.message);
         }
     },
 
@@ -177,7 +180,7 @@ const taskController = {
             });
         }
         catch (error) {
-            res.status(400).send(error);
+            res.status(400).send(error.message);
         }
     },
 

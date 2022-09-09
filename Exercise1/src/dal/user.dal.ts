@@ -7,12 +7,9 @@ import { passwordHashing } from "../utils/index.utils";
 const userDal = {
     isUserExists: async (userEmail: string) => {
         try {
-            // throw new Error("I am error");
-
             const isUserExists: iUser = await User.findOne({ email: userEmail });
             return { isUserExists };
         } catch (error) {
-            // return { error }
             throw error;
         }
     },
@@ -23,8 +20,8 @@ const userDal = {
             const user: iUser = await newUser.save();
             return { user };
         }
-        catch (err) {
-            return { err }
+        catch (error) {
+            throw error;
         }
     },
 
@@ -33,18 +30,20 @@ const userDal = {
             const userId: Types.ObjectId = userFromDb._id;
             const assignedTasks: iAssignTask[] = await AssignTask.find({ assignTo: userEmail });
             if (assignedTasks.length > 0) {
-                assignedTasks.map(async (task) => {
-                    const newTask = _.pick(task, ['taskTitle', 'description', 'dueDate']);
-                    newTask.userId = userId;
-                    newTask.status = "new";
-                    const userTask: iTask = new Task(newTask);
-                    await userTask.save();
-                });
+                await Promise.all(
+                    assignedTasks.map((task) => {
+                        const newTask = _.pick(task, ['taskTitle', 'description', 'dueDate']);
+                        newTask.userId = userId;
+                        newTask.status = "new";
+                        const userTask: iTask = new Task(newTask);
+                        userTask.save();
+                    })
+                )
                 await AssignTask.deleteMany({ assignTo: userEmail })
             }
             return assignedTasks;
         } catch (error) {
-            throw new Error(error);
+            throw error;
         }
     },
 
@@ -60,7 +59,7 @@ const userDal = {
             }
             return user;
         } catch (error) {
-            throw new Error(error);
+            throw error;
         }
     },
 
@@ -68,10 +67,10 @@ const userDal = {
         try {
             const skip = (pageNo - 1) * pageSize;
             const allUsers: iUser[] = await User.find({ "role": "member" }).select("-password")
-                .skip(skip).limit(pageSize)
+                .skip(skip).limit(pageSize);
             return allUsers;
         } catch (error) {
-            throw new Error(error);
+            throw error;
         }
     },
 
@@ -84,7 +83,7 @@ const userDal = {
             });
             return updatedUser;
         } catch (error) {
-            throw new Error(error);
+            throw error;
         }
     }
 

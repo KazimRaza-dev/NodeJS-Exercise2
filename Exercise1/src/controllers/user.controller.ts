@@ -17,7 +17,6 @@ const userController = {
             });
         }
         catch (error) {
-            console.log(error);
             res.status(400).send(error.message)
         }
     },
@@ -25,32 +24,29 @@ const userController = {
     login: async (req: Request, res: Response) => {
         try {
             const user = _.pick(req.body, ["email", "password", "role"]);
-            const loginResult = await userService.loginUser(user);
-            if (loginResult.status === false) {
-                return res.status(401).send("Invalid Email, password or role")
+            const { loggedIn, failure } = await userService.loginUser(user);
+            if (failure) {
+                return res.status(failure.statusCode).send(failure.message)
             }
-            const token = loginResult.user.generateAuthToken();
+            const token = loggedIn.user.generateAuthToken();
             return res.header('x-auth-token', token).status(200).json({
                 "message": "successfully login",
-                "User": loginResult.user,
+                "User": loggedIn.user,
             })
         }
         catch (error) {
-            res.status(400).send(error)
+            res.status(400).send(error.message)
         }
     },
 
     getAllUsers: async (req: Request, res: Response) => {
         try {
-            let { pageno, size } = req.query as any;
-            const users: iUser[] = await userService.getAllUsers(pageno, size);
-            if (users.length > 0) {
-                return res.status(200).send(users);
-            }
-            res.status(200).send("No Users Exists.");
+            const { pageno, size } = req.query as any;
+            const users = await userService.getAllUsers(pageno, size);
+            res.status(200).send(users);
         }
         catch (error) {
-            res.status(400).send(error);
+            res.status(400).send(error.message);
         }
     },
 
@@ -60,16 +56,14 @@ const userController = {
             const userId: string = req.params.id;
             const { failure, userUpdated } = await userService.changeUserRole(userId, newRole);
             if (failure) {
-                return res.status(failure.statusCode).send({
-                    message: failure.message,
-                });
+                return res.status(failure.statusCode).send(failure.message);
             }
             res.status(200).send({
                 message: userUpdated.message,
                 user: userUpdated.user
             });
         } catch (error) {
-            res.status(400).send(error);
+            res.status(400).send(error.message);
         }
     }
 }

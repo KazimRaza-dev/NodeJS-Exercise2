@@ -4,20 +4,32 @@ import { User, Task, AssignTask } from "../models/index.model";
 
 const assignTaskDal = {
     isUserExists: async (assignToUserEmail: string): Promise<iUser> => {
-        const user: iUser = await User.findOne({ email: assignToUserEmail });
-        return user;
+        try {
+            const user: iUser = await User.findOne({ email: assignToUserEmail });
+            return user;
+        } catch (error) {
+            throw error;
+        }
     },
 
     assignTaskToExistingUser: async (newAssignTask): Promise<iTask> => {
-        const newTask: iTask = new Task(newAssignTask);
-        const task: iTask = await newTask.save();
-        return task;
+        try {
+            const newTask: iTask = new Task(newAssignTask);
+            const task: iTask = await newTask.save();
+            return task;
+        } catch (error) {
+            throw error;
+        }
     },
 
     assignTaskToNonExistingUser: async (assignTaskObj): Promise<iAssignTask> => {
-        const newAssignTask: iAssignTask = new AssignTask(assignTaskObj);
-        const assignTask: iAssignTask = await newAssignTask.save();
-        return assignTask;
+        try {
+            const newAssignTask: iAssignTask = new AssignTask(assignTaskObj);
+            const assignTask: iAssignTask = await newAssignTask.save();
+            return assignTask;
+        } catch (error) {
+            throw error;
+        }
     }
 }
 export default assignTaskDal;

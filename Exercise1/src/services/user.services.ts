@@ -1,7 +1,7 @@
 import * as _ from "lodash";
 import { iUser, iAssignTask } from "../interfaces/index.interfaces";
 import { userDal } from "../dal/index.dal";
-import { passwordHashing } from "../utils/index.utils";
+import { passwordHashing, responseWrapper } from "../utils/index.utils";
 
 interface iFailure {
     message: string
@@ -17,28 +17,12 @@ const userService = {
         try {
             const { isUserExists } = await userDal.isUserExists(userToRegister.email);
             if (isUserExists) {
-                const failure: iFailure = {
-                    message: "Email already Exists.",
-                    statusCode: 200
-                }
+                const failure = responseWrapper(200, "Email already Exists")
                 return { failure };
             }
-            // if (error) {
-            //     const failure: iFailure = {
-            //         message: error,
-            //         statusCode: 400
-            //     }
-            //     return { failure };
-            // }
             userToRegister.password = await passwordHashing.hashPassword(userToRegister.password);
-            const { err, user } = await userDal.create(userToRegister);
-            if (err) {
-                const failure: iFailure = {
-                    message: err,
-                    statusCode: 400
-                }
-                return { failure };
-            }
+            const { user } = await userDal.create(userToRegister);
+
             const assignedTasks: iAssignTask[] = await userDal.assignTaskToNewUser(user, userToRegister.email);
             const success: iSuccess = {
                 userFromDb: user,
@@ -47,30 +31,36 @@ const userService = {
             return { success }
         } catch (error) {
             throw error;
-            // const failure: iFailure = {
-            //     message: error,
-            //     statusCode: 400
-            // }
-            // return { failure };
         }
     },
 
     loginUser: async (reqUser) => {
-        const user: iUser = await userDal.checkLogin(reqUser.email, reqUser.password, reqUser.role);
-        if (user) {
-            return {
-                status: true,
-                user: user
+        try {
+            const user: iUser = await userDal.checkLogin(reqUser.email, reqUser.password, reqUser.role);
+            if (user) {
+                const loggedIn = {
+                    user: user,
+                }
+                return { loggedIn }
             }
-        }
-        return {
-            status: false
+            const failure = responseWrapper(401, "Invalid Email, password or role")
+            return { failure };
+        } catch (error) {
+            throw error;
         }
     },
 
     getAllUsers: async (pageNo = 1, pageSize = 5) => {
-        const users: iUser[] = await userDal.getAllUsers(pageNo, pageSize)
-        return users;
+        try {
+            const users: iUser[] = await userDal.getAllUsers(pageNo, pageSize)
+            if (users.length > 0) {
+                return users;
+            }
+            const noUsers: string = "No Users Exists.";
+            return noUsers;
+        } catch (error) {
+            throw error;
+        }
     },
 
     changeUserRole: async (userId: string, newRole: string) => {
@@ -83,19 +73,10 @@ const userService = {
                 }
                 return { userUpdated }
             }
-            return {
-                failure: {
-                    message: `User with id ${userId} does not exists.`,
-                    statusCode: 404
-                }
-            }
+            const failure = responseWrapper(404, `User with id ${userId} does not exists.`);
+            return { failure }
         } catch (error) {
-            return {
-                failure: {
-                    message: error,
-                    statusCode: 400
-                }
-            }
+            throw error;
         }
     }
 }

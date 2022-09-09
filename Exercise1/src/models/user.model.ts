@@ -1,7 +1,7 @@
 import { Schema, Model, model } from "mongoose";
-import iUser from "../interfaces/user.interface";
 import jwt from "jsonwebtoken";
 import * as dotenv from "dotenv";
+import { iUser } from "../interfaces/index.interfaces";
 dotenv.config();
 
 const userSchema: Schema = new Schema<iUser>({

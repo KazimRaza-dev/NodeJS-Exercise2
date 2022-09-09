@@ -1,5 +1,5 @@
 import Joi, { Schema } from "joi";
-import iTask from "../../interfaces/task.interface";
+import { iTask } from "../../interfaces/index.interfaces";
 
 const validateTasksFile = (taskArray: iTask[]) => {
     const taskSchema: Schema<iTask> = Joi.object().keys({

@@ -4,7 +4,7 @@ import { Request, Response } from "express";
 interface taskStatus {
     status: string
 }
-const validatechangeTaskStatusReq = (req: Request, res: Response, next) => {
+const validateChangeTaskStatusReq = (req: Request, res: Response, next) => {
     const changeStatusSchema: Schema<taskStatus> = Joi.object({
         newStatus: Joi.string().required().valid('new', 'in progress', 'done'),
     });
@@ -14,7 +14,7 @@ const validatechangeTaskStatusReq = (req: Request, res: Response, next) => {
     }
     next();
 }
-export default validatechangeTaskStatusReq;
+export default validateChangeTaskStatusReq;
 
 
 

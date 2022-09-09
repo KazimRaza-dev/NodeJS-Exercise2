@@ -4,6 +4,7 @@
     "fs": "^0.0.1-security"
   },
   "devDependencies": {
+    "@types/cors": "^2.8.12",
     "@types/express-fileupload": "^1.4.1"
   }
 }

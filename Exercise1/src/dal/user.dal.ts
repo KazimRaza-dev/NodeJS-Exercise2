@@ -1,28 +1,27 @@
 import * as _ from "lodash";
-import iUser from "../interfaces/user.interface";
-import User from "../models/user.model";
-import iAssignTask from "../interfaces/assignTask.interface";
-import AssignTask from "../models/assignTask.model";
-import Task from "../models/task.model";
-import iTask from "../interfaces/task.interface";
 import { Types } from "mongoose";
-import passwordHashing from "../utils/hashPassword.utils";
+import { iUser, iTask, iAssignTask } from "../interfaces/index.interfaces";
+import { User, Task, AssignTask } from "../models/index.model";
+import { passwordHashing } from "../utils/index.utils";
 
 const userDal = {
-    isUserAlreadyExists: async (userEmail: string) => {
+    isUserExists: async (userEmail: string) => {
         try {
-            const isUserAlreadyExist: iUser = await User.findOne({ email: userEmail });
-            return { isUserAlreadyExist };
+            // throw new Error("I am error");
+
+            const isUserExists: iUser = await User.findOne({ email: userEmail });
+            return { isUserExists };
         } catch (error) {
-            return { error }
+            // return { error }
+            throw error;
         }
     },
 
-    createNewUser: async (userToRegister) => {
+    create: async (userToRegister) => {
         try {
-            const user: iUser = new User(userToRegister);
-            const userFromDb: iUser = await user.save();
-            return { userFromDb };
+            const newUser: iUser = new User(userToRegister);
+            const user: iUser = await newUser.save();
+            return { user };
         }
         catch (err) {
             return { err }
@@ -35,7 +34,7 @@ const userDal = {
             const assignedTasks: iAssignTask[] = await AssignTask.find({ assignTo: userEmail });
             if (assignedTasks.length > 0) {
                 assignedTasks.map(async (task) => {
-                    let newTask = _.pick(task, ['taskTitle', 'description', 'dueDate']);
+                    const newTask = _.pick(task, ['taskTitle', 'description', 'dueDate']);
                     newTask.userId = userId;
                     newTask.status = "new";
                     const userTask: iTask = new Task(newTask);
@@ -49,17 +48,17 @@ const userDal = {
         }
     },
 
-    checkLoginCredientials: async (userEmail: string, userPassword: string, userRole: string): Promise<iUser> => {
+    checkLogin: async (userEmail: string, userPassword: string, userRole: string): Promise<iUser> => {
         try {
-            const userFromDb: iUser = await User.findOne({ email: userEmail, role: userRole });
-            if (userFromDb) {
-                const isPasswordCorrect = await passwordHashing.unhashPassword(userPassword, userFromDb.password);
+            const user: iUser = await User.findOne({ email: userEmail, role: userRole });
+            if (user) {
+                const isPasswordCorrect = await passwordHashing.unhashPassword(userPassword, user.password);
                 if (isPasswordCorrect) {
-                    return userFromDb;
+                    return user;
                 }
                 return null;
             }
-            return userFromDb;
+            return user;
         } catch (error) {
             throw new Error(error);
         }
@@ -78,12 +77,12 @@ const userDal = {
 
     changeUserRole: async (userId: string, newRole: string) => {
         try {
-            const updatedRole = await User.findByIdAndUpdate(userId, {
+            const updatedUser = await User.findByIdAndUpdate(userId, {
                 role: newRole
             }, {
                 new: true
             });
-            return updatedRole;
+            return updatedUser;
         } catch (error) {
             throw new Error(error);
         }

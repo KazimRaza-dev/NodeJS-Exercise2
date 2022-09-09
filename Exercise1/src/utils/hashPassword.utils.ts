@@ -1,13 +1,13 @@
 import * as bcrypt from "bcrypt";
 
 const passwordHashing = {
-    hashUserPassword: async (password: string): Promise<string> => {
+    hashPassword: async (password: string): Promise<string> => {
         try {
             const salt = await bcrypt.genSalt(10)
             const hash = await bcrypt.hash(password, salt);
             return hash;
         } catch (error) {
-            throw new Error(error);
+            throw error;
         }
     },
 

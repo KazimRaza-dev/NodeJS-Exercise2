@@ -1,8 +1,7 @@
 import * as _ from "lodash";
-import iUser from "../interfaces/user.interface";
-import iAssignTask from "../interfaces/assignTask.interface";
-import userDal from "../dataAccessLayer/user.dal";
-import passwordHashing from "../utils/hashPassword.utils";
+import { iUser, iAssignTask } from "../interfaces/index.interfaces";
+import { userDal } from "../dal/index.dal";
+import { passwordHashing } from "../utils/index.utils";
 
 interface iFailure {
     message: string
@@ -13,26 +12,26 @@ interface iSuccess {
     assignedTasks: iAssignTask[]
 }
 
-const userBLL = {
-    registerNewUser: async (userToRegister) => {
+const userService = {
+    registerUser: async (userToRegister) => {
         try {
-            const { error, isUserAlreadyExist } = await userDal.isUserAlreadyExists(userToRegister.email);
-            if (isUserAlreadyExist) {
+            const { isUserExists } = await userDal.isUserExists(userToRegister.email);
+            if (isUserExists) {
                 const failure: iFailure = {
                     message: "Email already Exists.",
                     statusCode: 200
                 }
                 return { failure };
             }
-            if (error) {
-                const failure: iFailure = {
-                    message: error,
-                    statusCode: 400
-                }
-                return { failure };
-            }
-            userToRegister.password = await passwordHashing.hashUserPassword(userToRegister.password);
-            const { err, userFromDb } = await userDal.createNewUser(userToRegister);
+            // if (error) {
+            //     const failure: iFailure = {
+            //         message: error,
+            //         statusCode: 400
+            //     }
+            //     return { failure };
+            // }
+            userToRegister.password = await passwordHashing.hashPassword(userToRegister.password);
+            const { err, user } = await userDal.create(userToRegister);
             if (err) {
                 const failure: iFailure = {
                     message: err,
@@ -40,27 +39,28 @@ const userBLL = {
                 }
                 return { failure };
             }
-            const assignedTasks: iAssignTask[] = await userDal.assignTaskToNewUser(userFromDb, userToRegister.email);
+            const assignedTasks: iAssignTask[] = await userDal.assignTaskToNewUser(user, userToRegister.email);
             const success: iSuccess = {
-                userFromDb: userFromDb,
+                userFromDb: user,
                 assignedTasks: assignedTasks
             }
             return { success }
         } catch (error) {
-            const failure: iFailure = {
-                message: error,
-                statusCode: 400
-            }
-            return { failure };
+            throw error;
+            // const failure: iFailure = {
+            //     message: error,
+            //     statusCode: 400
+            // }
+            // return { failure };
         }
     },
 
-    loginUserBll: async (user) => {
-        const userFromDb: iUser = await userDal.checkLoginCredientials(user.email, user.password, user.role);
-        if (userFromDb) {
+    loginUser: async (reqUser) => {
+        const user: iUser = await userDal.checkLogin(reqUser.email, reqUser.password, reqUser.role);
+        if (user) {
             return {
                 status: true,
-                userFromDb: userFromDb
+                user: user
             }
         }
         return {
@@ -68,9 +68,9 @@ const userBLL = {
         }
     },
 
-    getAllRegisterUsers: async (pageNo = 1, pageSize = 5) => {
-        const allUsers: iUser[] = await userDal.getAllUsers(pageNo, pageSize)
-        return allUsers;
+    getAllUsers: async (pageNo = 1, pageSize = 5) => {
+        const users: iUser[] = await userDal.getAllUsers(pageNo, pageSize)
+        return users;
     },
 
     changeUserRole: async (userId: string, newRole: string) => {
@@ -99,4 +99,4 @@ const userBLL = {
         }
     }
 }
-export default userBLL;
+export default userService;

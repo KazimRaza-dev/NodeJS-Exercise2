@@ -1,14 +1,15 @@
 import express, { Router } from "express";
+import { userController } from "../controllers/index.controller";
+import { validateRegisterRequest, validateLoginRequest, adminAuth, validateChangeRoleRequest } from "../middlewares/index.middleware";
 const userRouter: Router = express.Router();
-import userController from "../controllers/user.controller";
-import validateRegisterReq from "../middlewares/validateRequest/registerReqValidator";
-import validateLoginReq from "../middlewares/validateRequest/loginReqValidator";
-import adminAuth from "../middlewares/adminAuth";
-import validateChangeRoleRequest from "../middlewares/validateRequest/changeUserRole"
 
-userRouter.post("/user/register", adminAuth, validateRegisterReq, userController.registerUser)
-userRouter.post("/user/login", validateLoginReq, userController.loginUser)
+userRouter.post("/user/register", adminAuth, validateRegisterRequest, userController.register)
+userRouter.post("/user/login", validateLoginRequest, userController.login)
 userRouter.get("/user/allusers", adminAuth, userController.getAllUsers)
 userRouter.put("/user/change-role/:id", adminAuth, validateChangeRoleRequest, userController.changeUserRole)
+
+userRouter.get("/user/abc", (req, res) => {
+    return res.send("Hello i am called")
+})
 
 export default userRouter;

@@ -1,18 +1,18 @@
-import iTask from "../interfaces/task.interface";
 import * as _ from "lodash";
-import taskDal from "../dataAccessLayer/task.dal";
-import { UploadedFile } from "express-fileupload";
-import validateTasksFile from "../middlewares/validateRequest/tasksFileValidator"
 import { ValidationError } from "joi";
+import { UploadedFile } from "express-fileupload";
+import { iTask } from "../interfaces/index.interfaces";
+import { taskDal } from "../dal/index.dal";
+import { validateTasksFile } from "../middlewares/index.middleware";
 
-const taskBLL = {
-    addNewTaskBll: async (reqTask): Promise<iTask> => {
-        const result: iTask = await taskDal.createNewTask(reqTask);
-        return result;
+const taskService = {
+    createTask: async (reqTask): Promise<iTask> => {
+        const task: iTask = await taskDal.create(reqTask);
+        return task;
     },
 
     checkMemberAccess: async (taskId: string, tokenUserId: string, operation: string) => {
-        const isTaskExist: iTask = await taskDal.checkTaskExist(taskId);
+        const isTaskExist: iTask = await taskDal.isTaskExists(taskId);
         if (isTaskExist) {
             const userId: string = isTaskExist.userId.toString();
             if (tokenUserId !== userId) {
@@ -26,7 +26,7 @@ const taskBLL = {
         else {
             return {
                 isError: true,
-                statusCode: 400,
+                statusCode: 404,
                 msg: `Task with id ${taskId} does not exists.`
             }
         }
@@ -35,40 +35,40 @@ const taskBLL = {
         };
     },
 
-    updateExistingTask: async (taskId: string, task: iTask): Promise<iTask> => {
+    update: async (taskId: string, task: iTask): Promise<iTask> => {
         const updatedTask: iTask = await taskDal.editUserTask(taskId, task);
         return updatedTask;
     },
 
-    deleteTask: async (taskId: string): Promise<iTask> => {
-        const taskDeleted: iTask = await taskDal.deleteUserTask(taskId);
+    delete: async (taskId: string): Promise<iTask> => {
+        const taskDeleted: iTask = await taskDal.delete(taskId);
         return taskDeleted;
     },
 
-    getAllAddedTasks: async (userId: string, pageno: number = 1, pageSize: number = 5): Promise<iTask[]> => {
-        const userTasks: iTask[] = await taskDal.getUserAllTasks(userId, pageno, pageSize);
-        return userTasks;
+    getUserTasks: async (userId: string, pageno: number = 1, pageSize: number = 5): Promise<iTask[]> => {
+        const tasks: iTask[] = await taskDal.getUserTasks(userId, pageno, pageSize);
+        return tasks;
     },
 
-    getAllDbTasks: async (pageNo = 1, pageSize = 5) => {
-        const allTasks = await taskDal.getAllTasks(pageNo, pageSize);
-        return allTasks;
+    getAllTasks: async (pageNo = 1, pageSize = 5) => {
+        const tasks = await taskDal.getAllTasks(pageNo, pageSize);
+        return tasks;
     },
 
-    changeTaskStatus: async (taskId: string, newStatus: string): Promise<boolean> => {
-        const isStatusChanged: boolean = await taskDal.changeTaskStatus(taskId, newStatus);
+    changeStatus: async (taskId: string, newStatus: string): Promise<boolean> => {
+        const isStatusChanged: boolean = await taskDal.changeStatus(taskId, newStatus);
         return isStatusChanged;
     },
 
     changeTaskStatusAdmin: async (taskId: string, newStatus: string) => {
-        const editedTask = await taskDal.changeTaskStatusAdmin(taskId, newStatus);
+        const editedTask = await taskDal.changeStatusAdmin(taskId, newStatus);
         return editedTask;
     },
 
-    searchTasks: async (keywordToSearch: string) => {
+    search: async (keywordToSearch: string) => {
         keywordToSearch = keywordToSearch.toLowerCase();
-        const searchResult = await taskDal.searchTask(keywordToSearch);
-        return searchResult;
+        const matchedTasks = await taskDal.searchTasks(keywordToSearch);
+        return matchedTasks;
     },
 
     importTasksFile: async (tasksFile: UploadedFile, userId): Promise<{
@@ -88,7 +88,7 @@ const taskBLL = {
                 fileData.map((task) => {
                     task.status = "new";
                     task.userId = userId;
-                    taskDal.createNewTask(task)
+                    taskDal.create(task)
                 })
             )
             return { fileData };
@@ -97,4 +97,4 @@ const taskBLL = {
         }
     }
 }
-export default taskBLL;
+export default taskService;

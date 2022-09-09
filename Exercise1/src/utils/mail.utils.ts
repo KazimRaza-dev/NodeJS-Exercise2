@@ -3,12 +3,12 @@ import nodemailer, { Transporter } from "nodemailer";
 import * as dotenv from "dotenv";
 dotenv.config();
 
-const SendEmailToUser = async (loginUserName: string, assignTo: string) => {
+const sendEmailToUser = async (name: string, assignTo: string) => {
     try {
         const email: string = process.env.email;
         const password: string = process.env.emailPassword;
 
-        let transporter: Transporter = nodemailer.createTransport({
+        const transporter: Transporter = nodemailer.createTransport({
             service: 'gmail',
             secure: true,
             auth: {
@@ -16,12 +16,11 @@ const SendEmailToUser = async (loginUserName: string, assignTo: string) => {
                 pass: password
             }
         })
-        let today: Date = new Date();
+        const today: Date = new Date();
         const dateAndTime = today.toLocaleTimeString('it-IT');
+        const textToSent: string = name + " has assign you a task on NodeExercise website. Sign Up to view that Task. You can register yourself at http://localhost:3001/user/register";
 
-        const textToSent: string = loginUserName + " has assign you a task on NodeExercise website. Sign Up to view that Task. You can register yourself at http://localhost:3001/user/register";
-
-        var mailOptions = {
+        const mailOptions = {
             from: email,
             to: assignTo,
             subject: 'Node JS Exercise 1' + " - " + dateAndTime,
@@ -29,7 +28,6 @@ const SendEmailToUser = async (loginUserName: string, assignTo: string) => {
         };
         const { error } = await transporter.sendMail(mailOptions);
         if (error) {
-            console.log(error);
             return false;
         }
         else {
@@ -41,4 +39,4 @@ const SendEmailToUser = async (loginUserName: string, assignTo: string) => {
         return false;
     }
 }
-export default SendEmailToUser;
+export default sendEmailToUser;

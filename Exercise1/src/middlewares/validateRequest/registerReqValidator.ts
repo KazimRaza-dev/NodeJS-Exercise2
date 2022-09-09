@@ -1,6 +1,6 @@
 import Joi, { Schema } from "joi";
-import iUser from "../../interfaces/user.interface";
 import { Request, Response } from "express";
+import { iUser } from "../../interfaces/index.interfaces";
 
 const validateRegisterRequest = (req: Request, res: Response, next) => {
     const userSchema: Schema<iUser> = Joi.object({

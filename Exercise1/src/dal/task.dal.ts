@@ -1,18 +1,17 @@
-import iTask from "../interfaces/task.interface";
-import Task from "../models/task.model";
-import User from "../models/user.model";
 import * as _ from "lodash";
+import { iTask } from "../interfaces/index.interfaces";
+import { Task } from "../models/index.model";
 
 const taskDal = {
-    createNewTask: async (reqTask): Promise<iTask> => {
-        const user: iTask = new Task(reqTask);
-        const taskFromDb: iTask = await user.save();
-        return taskFromDb;
+    create: async (reqTask): Promise<iTask> => {
+        const newTask: iTask = new Task(reqTask);
+        const task: iTask = await newTask.save();
+        return task;
     },
 
-    checkTaskExist: async (taskId: string): Promise<iTask> => {
-        const isTaskExist = await Task.findById(taskId).select('userId');
-        return isTaskExist;
+    isTaskExists: async (taskId: string): Promise<iTask> => {
+        const task: iTask = await Task.findById(taskId).select('userId');
+        return task;
     },
 
     editUserTask: async (taskId: string, newTask: iTask): Promise<iTask> => {
@@ -22,12 +21,12 @@ const taskDal = {
         return updatedTask;
     },
 
-    deleteUserTask: async (taskId: string): Promise<iTask> => {
-        let taskDeleted: iTask = await Task.findByIdAndDelete(taskId);
-        return taskDeleted;
+    delete: async (taskId: string): Promise<iTask> => {
+        let deletedTask: iTask = await Task.findByIdAndDelete(taskId);
+        return deletedTask;
     },
 
-    getUserAllTasks: async (userId: string, pageNo: number, pageSize: number): Promise<iTask[]> => {
+    getUserTasks: async (userId: string, pageNo: number, pageSize: number): Promise<iTask[]> => {
         const skip: number = (pageNo - 1) * pageSize;
         const userTasks: iTask[] = await Task.find({ userId: userId }).select('taskTitle description dueDate assignBy').skip(skip).limit(pageSize);
         return userTasks;
@@ -36,7 +35,7 @@ const taskDal = {
     getAllTasks: async (pageNo: number, pageSize: number) => {
         const skip: number = (pageNo - 1) * pageSize;
         try {
-            const result = await Task.aggregate(
+            const tasks = await Task.aggregate(
                 [
                     {
                         $lookup: {
@@ -56,15 +55,15 @@ const taskDal = {
                     { "$limit": parseInt(pageSize.toString()) }
                 ],
             )
-            return result;
+            return tasks;
         } catch (error) {
             console.log(error);
         }
     },
 
-    changeTaskStatus: async (taskId: string, newStatus: string) => {
-        const task = await Task.findById(taskId);
-        const prevStatus = task.status;
+    changeStatus: async (taskId: string, newStatus: string) => {
+        const task: iTask = await Task.findById(taskId);
+        const prevStatus: string = task.status;
         const conditionsArray: boolean[] = [
             (prevStatus === "new" && newStatus !== 'in progress'),
             (prevStatus === "in progress" && newStatus !== 'done')
@@ -80,18 +79,18 @@ const taskDal = {
         return true;
     },
 
-    changeTaskStatusAdmin: async (taskId: string, newStatus: string): Promise<iTask> => {
-        const updatedStatus = await Task.findByIdAndUpdate(taskId, {
+    changeStatusAdmin: async (taskId: string, newStatus: string): Promise<iTask> => {
+        const updatedTask: iTask = await Task.findByIdAndUpdate(taskId, {
             status: newStatus
         }, {
             new: true
         });
-        return updatedStatus;
+        return updatedTask;
     },
 
-    searchTask: async (keyword: string): Promise<iTask[]> => {
-        const searchResult: iTask[] = await Task.find({ "taskTitle": { $regex: keyword, "$options": "i" } });
-        return searchResult;
+    searchTasks: async (keyword: string): Promise<iTask[]> => {
+        const matchedTasks: iTask[] = await Task.find({ "taskTitle": { $regex: keyword, "$options": "i" } });
+        return matchedTasks;
     },
 
 }

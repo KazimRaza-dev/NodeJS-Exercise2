@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import * as _ from "lodash";
-import assignTaskBll from "../businessLogicLayer/assignTask.bll";
+import { assignTaskService } from "../services/index.services";
 
 export interface userAuthRequest extends Request {
     user: any
@@ -11,17 +11,16 @@ const assignTaskController = {
             const loginUserEmail: string = req.user.email;
             const loginUserName: string = req.user.name;
             let newAssignTask = _.pick(req.body, ['taskTitle', 'description', 'dueDate']);
+            const isTaskAssign = await assignTaskService.assignTaskToUser(newAssignTask, req.body.assignTo, loginUserEmail, loginUserName);
 
-            const bllResult = await assignTaskBll.assignTaskToUser(newAssignTask, req.body.assignTo, loginUserEmail, loginUserName);
-
-            if (bllResult.status) {
+            if (isTaskAssign.status) {
                 return res.status(200).json({
-                    "message": bllResult.message,
-                    "Task details": bllResult.dataToSend
+                    "message": isTaskAssign.message,
+                    "Task details": isTaskAssign.dataToSend
                 });
             }
             return res.status(400).json({
-                "message": bllResult.message,
+                "message": isTaskAssign.message,
             });
         }
         catch (error) {

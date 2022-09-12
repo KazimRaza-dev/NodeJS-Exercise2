@@ -3,10 +3,6 @@ import { iUser, iAssignTask } from "../interfaces/index.interfaces";
 import { userDal } from "../dal/index.dal";
 import { passwordHashing, responseWrapper } from "../utils/index.utils";
 
-interface iFailure {
-    message: string
-    statusCode: number
-}
 interface iSuccess {
     userFromDb: iUser
     assignedTasks: iAssignTask[]

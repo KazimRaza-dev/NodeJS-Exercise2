@@ -1,5 +1,5 @@
-import { Schema, Model, model, Types } from "mongoose";
-import iAssignTask from "../interfaces/assignTask.interface";
+import { Schema, Model, model } from "mongoose";
+import { iAssignTask } from "../interfaces/index.interfaces";
 
 const assignTaskSchema: Schema = new Schema<iAssignTask>({
     taskTitle: {

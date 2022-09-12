@@ -1,6 +1,6 @@
 import Joi, { Schema } from "joi";
 import { Request, Response } from "express";
-import iAssignTask from "../../interfaces/assignTask.interface";
+import { iAssignTask } from "../../interfaces/index.interfaces";
 
 const validateAssignTaskRequest = (req: Request, res: Response, next) => {
     const assignTaskSchema: Schema<iAssignTask> = Joi.object({

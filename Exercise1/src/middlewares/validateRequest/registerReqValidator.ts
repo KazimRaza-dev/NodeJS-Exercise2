@@ -1,5 +1,5 @@
 import Joi, { Schema } from "joi";
-import iUser from "../../interfaces/user.interface";
+import { iUser } from "../../interfaces/index.interfaces";
 import { Request, Response } from "express";
 
 const validateRegisterRequest = (req: Request, res: Response, next) => {

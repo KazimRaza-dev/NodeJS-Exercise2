@@ -1,6 +1,6 @@
-import iTask from "../interfaces/task.interface";
-import Task from "../models/task.model";
 import * as _ from "lodash";
+import { iTask } from "../interfaces/index.interfaces";
+import { Task } from "../models/index.model";
 
 const taskDal = {
     createNewTask: async (reqTask): Promise<iTask> => {
@@ -22,7 +22,7 @@ const taskDal = {
     },
 
     deleteUserTask: async (taskId: string): Promise<iTask> => {
-        let taskDeleted: iTask = await Task.findByIdAndDelete(taskId);
+        const taskDeleted: iTask = await Task.findByIdAndDelete(taskId);
         return taskDeleted;
     },
 

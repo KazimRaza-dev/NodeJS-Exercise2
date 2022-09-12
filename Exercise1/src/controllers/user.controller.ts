@@ -1,12 +1,12 @@
 import { Request, Response } from "express";
 import * as _ from "lodash";
-import userBLL from "../businessLogicLayer/user.bll";
+import { userService } from "../services/index.services";
 
 const userController = {
     registerUser: async (req: Request, res: Response) => {
         try {
-            let userToRegister = _.pick(req.body, ['email', 'password', 'fname', 'lname']);
-            const result = await userBLL.registerNewUser(userToRegister);
+            const userToRegister = _.pick(req.body, ['email', 'password', 'fname', 'lname']);
+            const result = await userService.registerNewUser(userToRegister);
             if (result.status === false) {
                 return res.status(400).send("Email already Exist.")
             }
@@ -23,7 +23,7 @@ const userController = {
     loginUser: async (req: Request, res: Response) => {
         try {
             const user = _.pick(req.body, ["email", "password"]);
-            const loginResult = await userBLL.loginUserBll(user);
+            const loginResult = await userService.loginUserBll(user);
             if (loginResult.status === false) {
                 return res.status(400).send("Invalid Email or password")
             }

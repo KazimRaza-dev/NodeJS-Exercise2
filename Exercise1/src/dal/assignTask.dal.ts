@@ -1,10 +1,6 @@
-import iAssignTask from "../interfaces/assignTask.interface";
-import iTask from "../interfaces/task.interface";
-import User from "../models/user.model";
-import AssignTask from "../models/assignTask.model";
-import Task from "../models/task.model";
-import iUser from "../interfaces/user.interface";
 import * as _ from "lodash";
+import { iUser, iTask, iAssignTask } from "../interfaces/index.interfaces";
+import { User, Task, AssignTask } from "../models/index.model";
 
 const assignTaskDAL = {
     checkUserExists: async (assignToUserEmail: string): Promise<iUser> => {

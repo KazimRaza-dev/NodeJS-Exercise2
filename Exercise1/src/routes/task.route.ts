@@ -1,13 +1,11 @@
-import taskController from "../controllers/task.controller"
 import express, { Router } from "express";
 const taskRouter: Router = express();
-import authMiddleware from "../middlewares/auth";
-import validateTaskReq from "../middlewares/validateRequest/taskReqValidator";
-import validateEditTaskReq from "../middlewares/validateRequest/editTaskValidator";
+import { taskController } from "../controllers/index.controller";
+import { authMiddleware, validateTaskRequest, validateEditTaskRequest, } from "../middlewares/index.middleware";
 
-taskRouter.post("/task/addtask", authMiddleware, validateTaskReq, taskController.addTask);
+taskRouter.post("/task/addtask", authMiddleware, validateTaskRequest, taskController.addTask);
 
-taskRouter.put("/task/edittask/:id", authMiddleware, validateEditTaskReq, taskController.editTask);
+taskRouter.put("/task/edittask/:id", authMiddleware, validateEditTaskRequest, taskController.editTask);
 
 taskRouter.delete("/task/deletetask/:id", authMiddleware, taskController.deleteTask);
 

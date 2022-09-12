@@ -1,5 +1,5 @@
 import { Schema, Model, model, Types } from "mongoose";
-import iTask from "../interfaces/task.interface";
+import { iTask } from "../interfaces/index.interfaces";
 
 const taskSchema: Schema = new Schema<iTask>({
     taskTitle: {

@@ -1,7 +1,6 @@
 import * as _ from "lodash";
-import iUser from "../interfaces/user.interface";
-import iAssignTask from "../interfaces/assignTask.interface";
-import userDal from "../dataAccessLayer/user.dal";
+import { iUser, iAssignTask } from "../interfaces/index.interfaces";
+import { userDal } from "../dal/index.dal";
 
 const userBLL = {
     registerNewUser: async (userToRegister) => {

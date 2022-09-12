@@ -1,9 +1,7 @@
-import iAssignTask from "../interfaces/assignTask.interface";
-import iTask from "../interfaces/task.interface";
 import * as _ from "lodash";
-import iUser from "../interfaces/user.interface";
-import SendEmailToUser from "../utils/mail.utils";
-import assignTaskDal from "../dataAccessLayer/assignTask.dal";
+import { iUser, iTask, iAssignTask } from "../interfaces/index.interfaces";
+import { sendEmailToUser } from "../utils/index.utils";
+import { assignTaskDal } from "../dal/index.dal";
 
 const assignTaskBll = {
     assignTaskToUser: async (newAssignTask, assignTo: string, loginUserEmail: string, loginUserName: string) => {
@@ -19,7 +17,7 @@ const assignTaskBll = {
             }
         }
         else {
-            const isEmailSent: boolean = await SendEmailToUser(loginUserName, assignTo);
+            const isEmailSent: boolean = await sendEmailToUser(loginUserName, assignTo);
             if (!isEmailSent) {
                 return {
                     status: false,

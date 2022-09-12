@@ -1,11 +1,7 @@
 import * as _ from "lodash";
-import iUser from "../interfaces/user.interface";
-import User from "../models/user.model";
-import iAssignTask from "../interfaces/assignTask.interface";
-import AssignTask from "../models/assignTask.model";
-import Task from "../models/task.model";
-import iTask from "../interfaces/task.interface";
 import { Types } from "mongoose";
+import { iUser, iTask, iAssignTask } from "../interfaces/index.interfaces";
+import { User, Task, AssignTask } from "../models/index.model";
 
 const userDal = {
     isUserAlreadyExists: async (userEmail: string): Promise<iUser> => {
@@ -23,12 +19,15 @@ const userDal = {
         const userId: Types.ObjectId = userFromDb._id;
         const assignedTasks: iAssignTask[] = await AssignTask.find({ assignTo: userEmail });
         if (assignedTasks.length > 0) {
-            assignedTasks.map(async (task) => {
-                let newTask = _.pick(task, ['taskTitle', 'description', 'dueDate', 'assignBy']);
-                newTask.userId = userId;
-                const userTask: iTask = new Task(newTask);
-                await userTask.save();
-            });
+            await Promise.all(
+                assignedTasks.map((task) => {
+                    const newTask = _.pick(task, ['taskTitle', 'description', 'dueDate']);
+                    newTask.userId = userId;
+                    newTask.status = "new";
+                    const userTask: iTask = new Task(newTask);
+                    userTask.save();
+                })
+            )
             await AssignTask.deleteMany({ assignTo: userEmail })
         }
         return assignedTasks;

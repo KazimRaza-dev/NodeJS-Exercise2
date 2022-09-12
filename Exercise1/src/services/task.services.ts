@@ -1,8 +1,6 @@
-import iTask from "../interfaces/task.interface";
 import * as _ from "lodash";
-import taskDal from "../dataAccessLayer/task.dal";
-import exp from "constants";
-
+import { iTask } from "../interfaces/index.interfaces";
+import { taskDal } from "../dal/index.dal";
 const taskBLL = {
     addNewTaskBll: async (reqTask): Promise<iTask> => {
         const result: iTask = await taskDal.createNewTask(reqTask);

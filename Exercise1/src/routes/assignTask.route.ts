@@ -1,9 +1,8 @@
 import express, { Router } from "express";
 const assignTaskRouter: Router = express.Router();
-import assignTaskController from "../controllers/assignTask.controller";
-import authMiddleware from "../middlewares/auth";
-import validateTaskReq from "../middlewares/validateRequest/assignTaskValidator";
+import { assignTaskController } from "../controllers/index.controller";
+import { authMiddleware, validateAssignTaskRequest } from "../middlewares/index.middleware";
 
-assignTaskRouter.post("/assignTask", authMiddleware, validateTaskReq, assignTaskController.assignNewTask)
+assignTaskRouter.post("/assignTask", authMiddleware, validateAssignTaskRequest, assignTaskController.assignNewTask)
 
 export default assignTaskRouter;

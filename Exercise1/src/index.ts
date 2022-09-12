@@ -3,8 +3,9 @@ import * as dotenv from "dotenv";
 import helmet from "helmet";
 import cors, { CorsOptions } from "cors";
 import bodyParser from "body-parser";
-import routes from "./routes/index.route"
+import routes from "./routes/index.routes"
 import loggingApiRequests from "./middlewares/loggingRequests";
+import errorHandler from "./middlewares/error-handler.middleware";
 import connectToMongoDB from "./config/config";
 connectToMongoDB();
 
@@ -34,6 +35,8 @@ app.use(cors(corsOptions));
 
 app.use(loggingApiRequests);
 app.use(routes);
+//middleware to handle errors
+app.use(errorHandler)
 
 app.listen(PORT, () => {
     console.log(`Server is listening at http://localhost:${PORT}`);

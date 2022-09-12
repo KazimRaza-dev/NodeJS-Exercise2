@@ -2,47 +2,67 @@ import * as _ from "lodash";
 import { iTask } from "../interfaces/index.interfaces";
 import { taskDal } from "../dal/index.dal";
 const taskBLL = {
-    addNewTaskBll: async (reqTask): Promise<iTask> => {
-        const result: iTask = await taskDal.createNewTask(reqTask);
-        return result;
+    addTask: async (reqTask): Promise<iTask> => {
+        try {
+            const task: iTask = await taskDal.create(reqTask);
+            return task;
+        } catch (error) {
+            throw error;
+        }
     },
 
-    isTaskAlreadyExists: async (taskId: string, tokenUserId: string) => {
-        const isTaskExist: iTask = await taskDal.checkTaskExist(taskId);
-        if (isTaskExist) {
-            const userId: string = isTaskExist.userId.toString();
-            if (tokenUserId !== userId) {
+    isTaskExists: async (taskId: string, tokenUserId: string) => {
+        try {
+            const isTaskExist: iTask = await taskDal.isTaskExists(taskId);
+            if (isTaskExist) {
+                const userId: string = isTaskExist.userId.toString();
+                if (tokenUserId !== userId) {
+                    return {
+                        isError: true,
+                        statusCode: 401,
+                        msg: "You cannot Edit other User's task."
+                    }
+                }
+            } else {
                 return {
                     isError: true,
-                    statusCode: 401,
-                    msg: "You cannot Edit other User's task."
+                    statusCode: 404,
+                    msg: `Task with id ${taskId} does not exists.`
                 }
             }
-        } else {
             return {
-                isError: true,
-                statusCode: 400,
-                msg: `Task with id ${taskId} does not exists.`
-            }
+                isError: false
+            };
+        } catch (error) {
+            throw error;
         }
-        return {
-            isError: false
-        };
     },
 
-    updateExistingTask: async (taskId: string, task: iTask): Promise<iTask> => {
-        const updatedTask: iTask = await taskDal.editUserTask(taskId, task);
-        return updatedTask;
+    updateTask: async (taskId: string, task: iTask): Promise<iTask> => {
+        try {
+            const editedtask: iTask = await taskDal.editUserTask(taskId, task);
+            return editedtask;
+        } catch (error) {
+            throw error;
+        }
     },
 
-    deleteTask: async (taskId: string): Promise<iTask> => {
-        const taskDeleted: iTask = await taskDal.deleteUserTask(taskId);
-        return taskDeleted;
+    delete: async (taskId: string): Promise<iTask> => {
+        try {
+            const deletedTask: iTask = await taskDal.delete(taskId);
+            return deletedTask;
+        } catch (error) {
+            throw error;
+        }
     },
 
-    getAllAddedTasks: async (userId: string): Promise<iTask[]> => {
-        const userTasks: iTask[] = await taskDal.getUserAllTasks(userId);
-        return userTasks;
+    getAllTasks: async (userId: string): Promise<iTask[]> => {
+        try {
+            const userTasks: iTask[] = await taskDal.getUserAllTasks(userId);
+            return userTasks;
+        } catch (error) {
+            throw error;
+        }
     }
 }
 export default taskBLL;

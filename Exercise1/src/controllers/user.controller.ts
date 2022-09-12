@@ -1,9 +1,9 @@
-import { Request, Response } from "express";
+import { Request, Response, NextFunction } from "express";
 import * as _ from "lodash";
 import { userService } from "../services/index.services";
 
 const userController = {
-    registerUser: async (req: Request, res: Response) => {
+    registerUser: async (req: Request, res: Response, next: NextFunction) => {
         try {
             const userToRegister = _.pick(req.body, ['email', 'password', 'fname', 'lname']);
             const result = await userService.registerNewUser(userToRegister);
@@ -17,10 +17,10 @@ const userController = {
             });
         }
         catch (error) {
-            res.status(400).send(error)
+            next(error);
         }
     },
-    loginUser: async (req: Request, res: Response) => {
+    loginUser: async (req: Request, res: Response, next: NextFunction) => {
         try {
             const user = _.pick(req.body, ["email", "password"]);
             const loginResult = await userService.loginUserBll(user);
@@ -34,7 +34,7 @@ const userController = {
             })
         }
         catch (error) {
-            res.status(400).send(error)
+            next(error);
         }
     }
 }

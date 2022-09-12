@@ -4,38 +4,54 @@ import { iUser, iTask, iAssignTask } from "../interfaces/index.interfaces";
 import { User, Task, AssignTask } from "../models/index.model";
 
 const userDal = {
-    isUserAlreadyExists: async (userEmail: string): Promise<iUser> => {
-        const isUserAlreadyExist: iUser = await User.findOne({ email: userEmail });
-        return isUserAlreadyExist;
+    isUserExists: async (userEmail: string) => {
+        try {
+            const isUserExists: iUser = await User.findOne({ email: userEmail });
+            return { isUserExists };
+        } catch (error) {
+            throw error;
+        }
     },
 
-    createNewUser: async (userToRegister): Promise<iUser> => {
-        const user: iUser = new User(userToRegister);
-        const userFromDb: iUser = await user.save();
-        return userFromDb;
+    create: async (userToRegister) => {
+        try {
+            const newUser: iUser = new User(userToRegister);
+            const user: iUser = await newUser.save();
+            return { user };
+        }
+        catch (error) {
+            throw error;
+        }
     },
 
     assignTaskToNewUser: async (userFromDb: iUser, userEmail: string): Promise<iAssignTask[]> => {
-        const userId: Types.ObjectId = userFromDb._id;
-        const assignedTasks: iAssignTask[] = await AssignTask.find({ assignTo: userEmail });
-        if (assignedTasks.length > 0) {
-            await Promise.all(
-                assignedTasks.map((task) => {
-                    const newTask = _.pick(task, ['taskTitle', 'description', 'dueDate']);
-                    newTask.userId = userId;
-                    newTask.status = "new";
-                    const userTask: iTask = new Task(newTask);
-                    userTask.save();
-                })
-            )
-            await AssignTask.deleteMany({ assignTo: userEmail })
+        try {
+            const userId: Types.ObjectId = userFromDb._id;
+            const assignedTasks: iAssignTask[] = await AssignTask.find({ assignTo: userEmail });
+            if (assignedTasks.length > 0) {
+                await Promise.all(
+                    assignedTasks.map((task) => {
+                        const newTask = _.pick(task, ['taskTitle', 'description', 'dueDate', 'assignBy']);
+                        newTask.userId = userId;
+                        const userTask: iTask = new Task(newTask);
+                        userTask.save();
+                    })
+                )
+                await AssignTask.deleteMany({ assignTo: userEmail })
+            }
+            return assignedTasks;
+        } catch (error) {
+            throw error;
         }
-        return assignedTasks;
     },
 
     checkLoginCredientials: async (userEmail: string, userPassword: string): Promise<iUser> => {
-        const userFromDb: iUser = await User.findOne({ email: userEmail, password: userPassword });
-        return userFromDb;
+        try {
+            const userFromDb: iUser = await User.findOne({ email: userEmail, password: userPassword });
+            return userFromDb;
+        } catch (error) {
+            throw error;
+        }
     },
 }
 export default userDal;

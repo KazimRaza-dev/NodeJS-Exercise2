@@ -4,37 +4,41 @@ import { userDal } from "../dal/index.dal";
 
 const userBLL = {
     registerNewUser: async (userToRegister) => {
-        const isUserAlreadyExist: iUser = await userDal.isUserAlreadyExists(userToRegister.email);
-        if (isUserAlreadyExist) {
-            return {
-                status: false
+        try {
+            const { isUserExists } = await userDal.isUserExists(userToRegister.email);
+            if (isUserExists) {
+                return {
+                    status: false
+                }
             }
-        }
-        const userFromDb: iUser = await userDal.createNewUser(userToRegister);
-        const assignedTasks: iAssignTask[] = await userDal.assignTaskToNewUser(userFromDb, userToRegister.email);
-        return {
-            status: true,
-            userFromDb: userFromDb,
-            assignedTasks: assignedTasks
+            const { user } = await userDal.create(userToRegister);
+            const assignedTasks: iAssignTask[] = await userDal.assignTaskToNewUser(user, userToRegister.email);
+            return {
+                status: true,
+                userFromDb: user,
+                assignedTasks: assignedTasks
+            }
+
+        } catch (error) {
+            throw error;
         }
     },
 
-    loginUserBll: async (user) => {
-        const userFromDb: iUser = await userDal.checkLoginCredientials(user.email, user.password);
-        if (userFromDb) {
-            return {
-                status: true,
-                userFromDb: userFromDb
+    loginUserBll: async (reqUser) => {
+        try {
+            const user: iUser = await userDal.checkLoginCredientials(reqUser.email, reqUser.password);
+            if (user) {
+                return {
+                    status: true,
+                    userFromDb: user
+                }
             }
-        }
-        return {
-            status: false
+            return {
+                status: false
+            }
+        } catch (error) {
+            throw error;
         }
     }
-
-
-
-
-
 }
 export default userBLL;

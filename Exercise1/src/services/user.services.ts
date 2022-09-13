@@ -7,7 +7,6 @@ interface iSuccess {
     userFromDb: iUser
     assignedTasks: iAssignTask[]
 }
-
 const userService = {
     registerUser: async (userToRegister) => {
         try {

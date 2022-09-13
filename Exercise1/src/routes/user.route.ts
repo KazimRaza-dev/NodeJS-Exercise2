@@ -8,8 +8,4 @@ userRouter.post("/user/login", validateLoginRequest, userController.login)
 userRouter.get("/user/allusers", adminAuth, userController.getAllUsers)
 userRouter.put("/user/change-role/:id", adminAuth, validateChangeRoleRequest, userController.changeUserRole)
 
-userRouter.get("/user/abc", (req, res) => {
-    return res.send("Hello i am called")
-})
-
 export default userRouter;
